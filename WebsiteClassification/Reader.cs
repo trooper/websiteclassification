@@ -47,7 +47,7 @@
         {
             return new WebPage
             {
-                Content = tokens[2],
+                Content = WebTools.UnescapeTsv(tokens[2]),
                 Url = tokens[3]
             };
         }

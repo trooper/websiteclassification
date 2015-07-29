@@ -5,11 +5,15 @@
     using System.IO;
     using System.Net;
     using PsiMl.WebsiteClasification;
+    using System.Collections.Concurrent;
+    using System.Threading;
+    using System;
 
     class Fetcher
     {
         private const string DefaultUserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2";
-
+        private const int MaxThreads = 4;
+        
         private class FetchItem
         {
             public string Url { get; set; }
@@ -24,36 +28,75 @@
             var pages = new List<WebPage>();
             webSite.Pages = pages;
 
-            var queue = new Queue<FetchItem>();
+            var queue = new ConcurrentQueue<FetchItem>();
             var visited = new HashSet<string>();
 
             queue.Enqueue(new FetchItem { Depth = 0, Url = url });
 
-            while (queue.Count > 0)
+            Semaphore semaphore = new Semaphore(1, MaxThreads);
+            FetchItem item;
+            var mutex = new object();
+            while (true)
             {
-                var item = queue.Dequeue();
-                visited.Add(item.Url.ToLower());
-                var page = this.FetchPage(item.Url);
-                pages.Add(page);
-
-                if (item.Depth < depth)
+                lock(mutex)
                 {
-                    foreach (var childUrl in this.ExtractUrls(page))
+                    semaphore.WaitOne();
+                    if (!queue.TryDequeue(out item))
                     {
-                        // We don't cross domain boundary
-                        if (WebTools.DomainHelper.GetDomain(childUrl) == webSite.Domain)
+                        break;
+                    }
+
+                    new Thread(() => FetchAndAdd(semaphore, item, depth, webSite.Domain, visited, queue, webSite.Pages)).Start();
+                }
+            }
+
+            return webSite;
+        }
+        
+        private void FetchAndAdd(Semaphore semaphore, FetchItem item, int depth, string domain, HashSet<string> visited, ConcurrentQueue<FetchItem> queue, List<WebPage> pages)
+        {
+            lock(visited)
+            {
+                visited.Add(item.Url.ToLower());
+            }
+
+            var page = this.FetchPage(item.Url);
+
+            lock(pages)
+            {
+                pages.Add(page);
+            }
+
+            if (item.Depth < depth)
+            {
+                foreach (var childUrl in this.ExtractUrls(page))
+                {
+                    string url;
+                    if (!childUrl.StartsWith("http"))
+                    {
+                        url = new Uri(new Uri(page.Url), childUrl).ToString();
+                    }
+                    else
+                    {
+                        url = childUrl;
+                    }
+
+                    // We don't cross domain boundary
+                    if (WebTools.DomainHelper.GetDomain(url) == domain)
+                    {
+                        lock (visited)
                         {
                             // Make sure we don't enter a cycle
-                            if (!visited.Contains(childUrl.ToLower()))
+                            if (!visited.Contains(url.ToLower()))
                             {
-                                queue.Enqueue(new FetchItem { Depth = item.Depth + 1, Url = childUrl });
+                                queue.Enqueue(new FetchItem { Depth = item.Depth + 1, Url = url });
                             }
                         }
                     }
                 }
             }
 
-            return webSite;
+            semaphore.Release();
         }
 
         private IEnumerable<string> ExtractUrls(WebPage page)

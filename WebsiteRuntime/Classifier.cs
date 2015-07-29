@@ -22,9 +22,7 @@
 
         internal static void InitializeClassifier()
         {
-            model = new PsiMl.WebsiteClasification.Model(null);
-
-            // classifier.Initialize(model)
+            model = new PsiMl.WebsiteClasification.Model(@"d:\Data\model");
         }
 
         

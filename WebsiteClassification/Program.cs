@@ -13,21 +13,22 @@
         static void Main(string[] args)
         {
             Logger.Initialize();
-            // Evaluation();
-            Training();
+
+            // var model = Training();
+            Evaluation(); //model);
             Console.ReadLine();
         }
 
-        static void Evaluation()
+        static void Evaluation(Model m = null)
         {
             var reader = new Reader();
-            var model = new Model(@"d:\Data\model");
+            var model = m == null ? new Model(@"d:\Data\model") : m;
             var evaluator = new Evaluation(model);
 
             var positive = reader.ReadAll(@"d:\Data\DataSets\Restaurant", Target.Restaurant);
             var negative = reader.ReadAll(@"d:\Data\DataSets\Other", Target.Other);
 
-            var entities = positive.Union(negative).ToArray();
+            var entities = positive.Union(negative);
             Logger.Log("Sets loaded");
 
             var results = evaluator.Evaluate(entities);
@@ -35,11 +36,11 @@
 
             foreach (var result in results)
             {
-                Console.WriteLine("{0}: {1}", result.Key, result.Value.ToString());
+                Console.WriteLine("{0,15}: {1}", result.Key, result.Value.ToString());
             }
         }
 
-        static void Training()
+        static Model Training()
         {
             var reader = new Reader();
             var featurizer = new Featurizer();
@@ -62,6 +63,8 @@
 
             model.Save(@"d:\Data\model");
             Logger.Log("Model serialized to file");
+
+            return model;
         }
     }
 }

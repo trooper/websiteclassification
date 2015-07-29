@@ -20,7 +20,7 @@
             get
             {
                 int outputs = this.TruePositive + this.FalsePositive;
-                return outputs != 0 ? this.TruePositive / outputs : 0.0;
+                return outputs != 0 ? (double)this.TruePositive / outputs : 0.0;
             }
         }
 
@@ -29,7 +29,7 @@
             get
             {
                 int total = this.TruePositive + this.FalseNegative;
-                return total != 0 ? this.TruePositive / total : 1.0;
+                return total != 0 ? (double)this.TruePositive / total : 1.0;
             }
         }
 

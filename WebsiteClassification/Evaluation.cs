@@ -15,9 +15,9 @@
         public Dictionary<Target, EvaluationResult> Evaluate(IEnumerable<MLEntity> entities)
         {
             var results = new Dictionary<Target, EvaluationResult>();
-            foreach (var target in  Enum.GetValues(typeof(Target)))
+            foreach (var target in this.model.Targets)
             {
-                results[(Target)target] = new EvaluationResult();
+                results[target] = new EvaluationResult();
             }
 
             foreach (var entity in entities)

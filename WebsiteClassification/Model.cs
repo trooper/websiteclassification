@@ -69,6 +69,7 @@
             using (var writer = new StreamWriter(modelFile))
             {
                 writer.WriteLine(string.Join("\t", this.Targets));
+                writer.WriteLine(vectors.Length);
                 foreach (var vector in vectors)
                 {
                     writer.WriteLine(string.Join("\t", vector));
@@ -88,10 +89,11 @@
             using (var reader = new StreamReader(modelFile))
             {
                 this.Targets = new HashSet<Target>(reader.ReadLine().Split('\t').Select(t => (Target)Enum.Parse(typeof(Target), t)));
+                int count = int.Parse(reader.ReadLine());
                 targetCount = this.Targets.Count;
-                weights = new double[targetCount][];
+                weights = new double[count][];
 
-                int count = 0;
+                count = 0;
                 while (!reader.EndOfStream)
                 {
                     var line = reader.ReadLine();
@@ -100,7 +102,8 @@
                 }
             }
 
-            this.regression = new MultinomialLogisticRegression(weights[0].Length, targetCount);
+            int inputs = weights[0].Length - 1; // We don't consider bias an input 
+            this.regression = new MultinomialLogisticRegression(inputs, targetCount);
             this.regression.Coefficients = weights;
             this.FeatureSpace = WebsiteClasification.FeatureSpace.LoadFromFile(featuresFile);
             this.Featurizer = new Featurizer();

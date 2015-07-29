@@ -55,41 +55,43 @@
         
         private void FetchAndAdd(Semaphore semaphore, FetchItem item, int depth, string domain, HashSet<string> visited, ConcurrentQueue<FetchItem> queue, List<WebPage> pages)
         {
-            lock(visited)
+            lock (visited)
             {
                 visited.Add(item.Url.ToLower());
             }
 
             var page = this.FetchPage(item.Url);
-
-            lock(pages)
+            if (page != null)
             {
-                pages.Add(page);
-            }
-
-            if (item.Depth < depth)
-            {
-                foreach (var childUrl in this.ExtractUrls(page))
+                lock (pages)
                 {
-                    string url;
-                    if (!childUrl.StartsWith("http"))
-                    {
-                        url = new Uri(new Uri(page.Url), childUrl).ToString();
-                    }
-                    else
-                    {
-                        url = childUrl;
-                    }
+                    pages.Add(page);
+                }
 
-                    // We don't cross domain boundary
-                    if (WebTools.DomainHelper.GetDomain(url) == domain)
+                if (item.Depth < depth)
+                {
+                    foreach (var childUrl in this.ExtractUrls(page))
                     {
-                        lock (visited)
+                        string url;
+                        if (!childUrl.StartsWith("http"))
                         {
-                            // Make sure we don't enter a cycle
-                            if (!visited.Contains(url.ToLower()))
+                            url = new Uri(new Uri(page.Url), childUrl).ToString();
+                        }
+                        else
+                        {
+                            url = childUrl;
+                        }
+
+                        // We don't cross domain boundary
+                        if (WebTools.DomainHelper.GetDomain(url) == domain)
+                        {
+                            lock (visited)
                             {
-                                queue.Enqueue(new FetchItem { Depth = item.Depth + 1, Url = url });
+                                // Make sure we don't enter a cycle
+                                if (!visited.Contains(url.ToLower()))
+                                {
+                                    queue.Enqueue(new FetchItem { Depth = item.Depth + 1, Url = url });
+                                }
                             }
                         }
                     }
@@ -117,13 +119,29 @@
             var page = new WebPage();
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.UserAgent = DefaultUserAgent;
-            using (var response = request.GetResponse())
+
+            try
             {
-                using (var reader = new StreamReader(response.GetResponseStream()))
+                using (var response = request.GetResponse())
                 {
-                    var html = reader.ReadToEnd();
-                    page.Content = html;
-                    page.Url = url;
+                    using (var reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        var html = reader.ReadToEnd();
+                        page.Content = html;
+                        page.Url = url;
+                    }
+                }
+            }
+            catch (WebException ex)
+            {
+                HttpWebResponse webResponse = (HttpWebResponse)ex.Response;
+                if (webResponse.StatusCode == HttpStatusCode.NotFound)
+                {
+                    // 404
+                }
+                else
+                {
+                    throw ex;
                 }
             }
 

@@ -22,6 +22,12 @@ namespace PsiMl.WebsiteClasification
         {
             var labeledCount = new Dictionary<Target, int>();
             var totalCount = new Dictionary<Target, int>();
+            
+            foreach (Target t in Enum.GetValues(typeof(Target)))
+            {
+                labeledCount.Add(t, 0);
+                totalCount.Add(t, 0);
+            }
 
             foreach(var entity in entities)
             {
@@ -48,15 +54,11 @@ namespace PsiMl.WebsiteClasification
                         }
                     } 
                 }
-                int oldCount = 0;
-                totalCount.TryGetValue(entity.Label, out oldCount);
-                totalCount[entity.Label] = oldCount + 1;
+                totalCount[entity.Label] ++;
 
                 if(count > 0)
                 {
-                    int oldCount2 = 0;
-                   labeledCount.TryGetValue(entity.Label, out oldCount2);
-                    labeledCount[entity.Label] = oldCount2 + 1;
+                    labeledCount[entity.Label]++;
 
                     //Console.WriteLine("{0} : {1}", entity.Label.ToString(), webSite.Domain);
                 }

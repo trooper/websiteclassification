@@ -8,7 +8,7 @@ namespace PsiMl.WebsiteClasification
 {
     public class DatasetCleanupHelper
     {
-        public static void CleanupDirectory(string directoryPath, string cleanDirectoryPath)
+        public static void CleanupDirectory(string directoryPath, string cleanDirectoryPath, string commonPrefixesDirPath)
         {
             Logger.Log("Cleaning whole directory {0}", directoryPath);
 
@@ -49,12 +49,69 @@ namespace PsiMl.WebsiteClasification
 
                 foreach(var file in files)
                 {
-                    
-                    CleanupFile(file, cleanDirectoryPath + path);
+                    //CleanupFile(file, cleanDirectoryPath + path);
+                    CleanupFileTroopersStyle(file, cleanDirectoryPath + path, commonPrefixesDirPath);
                 }
             }
         }
 
+        public static void CleanupFileTroopersStyle(string datasetPath, string cleanDatasetPath, string commonPrefixDirectory)
+        {
+            Console.WriteLine("Cleaning up file, Trooper style {0}", datasetPath);
+            var filename = new System.IO.FileInfo(datasetPath).Name;
+
+            // Key represents prefix, value is true if we already took one of the redudant url's
+            var commonPrefixes = new Dictionary<string, bool>();
+
+            if (System.IO.File.Exists(commonPrefixDirectory + filename))
+            {
+                foreach (var line in System.IO.File.ReadLines(commonPrefixDirectory + filename))
+                {
+                    commonPrefixes.Add(line, false);
+                }
+            }
+            using (var redudantWriter = new System.IO.StreamWriter("dump.txt"))
+            {
+                using (var writer = new System.IO.StreamWriter(cleanDatasetPath))
+                {
+                    long lineCounter = 0;
+                    long writtenLineCounter = 0;
+                    foreach (var line in System.IO.File.ReadLines(datasetPath))
+                    {
+                        var lineData = line.Split('\t');
+                        var url = lineData[0];
+                        bool writenWithPrefix = false;
+                        foreach (var commonPrefix in commonPrefixes)
+                        {
+                            if (url.StartsWith(commonPrefix.Key))
+                            {
+                                writenWithPrefix = true;
+                                if (commonPrefix.Value == false)
+                                {
+                                    writer.WriteLine(line);
+                                    writtenLineCounter++;
+                                    commonPrefixes[commonPrefix.Key] = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!writenWithPrefix)
+                        {
+                            writtenLineCounter++;
+                            writer.WriteLine(line);
+                        }
+                        else
+                        {
+                            redudantWriter.WriteLine(url);
+                        }
+                        lineCounter++;
+                        if (lineCounter % 1000 == 0)
+                            Logger.Log("{0} {1}", lineCounter, writtenLineCounter);
+                    }
+                }
+            }
+        }
+        /*
         public static void CleanupFile(string datasetPath, string cleanDatasetPath)
         {
             var uniqueLines = new Dictionary<string, List<string>>();
@@ -120,5 +177,6 @@ namespace PsiMl.WebsiteClasification
             }
             return paramsList;
         }
+        */
     }
 }

@@ -12,7 +12,7 @@
     {
         static void Main(string[] args)
         {
-            Logger.Initialize();
+            Logger.Initialize();            
             Analysis();
             // Evaluation();
             //Training();

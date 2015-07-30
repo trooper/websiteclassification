@@ -23,9 +23,7 @@
             this.buttonExecute.Enabled = false;
             this.crawlDepth.Enabled = false;
 
-            var url = this.url.Text;
-            this.webBrowser.Navigate(url);
-
+            this.labelPrediction.Text = "Fetching...";
             var worker = new BackgroundWorker();
             worker.DoWork += FetchAndClassify;
             worker.RunWorkerCompleted += FetchCompleted;
@@ -37,6 +35,8 @@
             this.labelPrediction.Text = this.prediction.ToString();
             this.buttonExecute.Enabled = true;
             this.crawlDepth.Enabled = true;
+
+            this.webBrowser.Navigate(this.url.Text);
         }
 
         private void FetchAndClassify(object sender, DoWorkEventArgs e)

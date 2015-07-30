@@ -40,17 +40,16 @@
             analyzer.Analyze();
 
         }
-
-        static void Evaluation()
+        static void Evaluation(Model m = null)
         {
             var reader = new Reader();
-            var model = new Model(@"Data\model");
+            var model = m == null ? new Model(@"\Data\model") : m;
             var evaluator = new Evaluation(model);
 
             var positive = reader.ReadAll(@"Data\DataSets\Restaurant", Target.Restaurant);
             var negative = reader.ReadAll(@"Data\DataSets\Other", Target.Other);
 
-            var entities = positive.Union(negative).ToArray();
+            var entities = positive.Union(negative);
             Logger.Log("Sets loaded");
 
             var results = evaluator.Evaluate(entities);
@@ -58,11 +57,11 @@
 
             foreach (var result in results)
             {
-                Console.WriteLine("{0}: {1}", result.Key, result.Value.ToString());
+                Console.WriteLine("{0,15}: {1}", result.Key, result.Value.ToString());
             }
         }
 
-        static void Training()
+        static Model Training()
         {
             var reader = new Reader();
             var featurizer = new Featurizer();
@@ -85,6 +84,8 @@
 
             model.Save(@"Data\model");
             Logger.Log("Model serialized to file");
+
+            return model;
         }
     }
 }

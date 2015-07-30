@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DatasetAnalyzer.cs" />
+    <Compile Include="DatasetCleanupHelper.cs" />
     <Compile Include="Evaluation.cs" />
     <Compile Include="EvaluationResult.cs" />
     <Compile Include="Feature.cs" />

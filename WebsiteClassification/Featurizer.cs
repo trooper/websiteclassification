@@ -13,19 +13,20 @@
         public Featurizer()
         {
             // ignore everything in pattern regex 
-            var pattern = @"[^\s \t \r\n,;.!`>@$*\[\]()_\-?{}""'/:|#&]+";
+            //var pattern = @"[^\s \t \r\n,;.!`>@$*\[\]()_\-?{}""'/:|#&]+"; // za splitovanje
+            var pattern = @"[\w]+";
             this.regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace);
         }
 
         public HashSet<string> Whitelist { get; set; }
 
-        public HashSet<string> Blacklist{ get; set; }
+        public HashSet<string> Blacklist { get; set; }
 
         public FeatureSpace CreateFeatureSpace(IEnumerable<MLEntity> entities)
         {
             var featureSpace = new FeatureSpace();
             int numberOfTargets = Enum.GetValues(typeof(Target)).Length;
-            
+
             // Frequency matrix, featureMatrix[k][t] indicates the number of appearances of feature K in entities of target T
             // var featureMatrix = new Dictionary<int, int[]>();
 
@@ -82,10 +83,9 @@
         {
             foreach (var page in webSite.Pages)
             {
-                var text = WebTools.GetRawTextFromPage(page);
-
                 var ngrams = new HashSet<string>();
-                foreach (var ngram in this.ExtractNGrams(text))
+
+                foreach (var ngram in this.ExtractNGrams(page))
                 {
                     if (!ngrams.Contains(ngram))
                     {
@@ -93,11 +93,8 @@
 
                         var value = Feature.Type.RawText + ":" + ngram;
                         bool use = false;
-                        if (this.Whitelist != null)
-                        {
-                            use = this.Whitelist.Contains(value);
-                        }
-                        else if (this.Blacklist != null)
+
+                        if (this.Blacklist != null)
                         {
                             use = !this.Blacklist.Contains(value);
                         }
@@ -119,14 +116,37 @@
             }
         }
 
-        public IEnumerable<string> ExtractNGrams(string text)
+        public IEnumerable<string> ExtractNGrams(WebPage page)
         {
-            Match matchResults = this.regex.Match(text);
-            while (matchResults.Success)
+            var document = new HtmlAgilityPack.HtmlDocument();
+            document.LoadHtml(page.Content.ToLower());
+
+            if (String.IsNullOrEmpty(page.Content))
             {
-                yield return matchResults.Value;
-                matchResults = matchResults.NextMatch();
+                yield return "empty";
             }
+
+            else
+            {
+                var nodes = document.DocumentNode.SelectNodes(
+                    "//meta[@name=\"description\" or @name=\"keywords\"]/@content");
+                    //"or //h1/text() or //h2/text() or //h3/text() or //title/text()");
+                //var nodes = document.DocumentNode.SelectNodes("//title/text()");
+
+                if (nodes != null)
+                {
+                    if (!nodes.Any()) throw new Exception("nece da moze");
+                    foreach (var node in nodes)
+                    {
+                        foreach (Match token in regex.Matches(node.OuterHtml))
+                        {
+                            if(token.Value.Length > 3)
+                                yield return token.ToString();
+                        }
+                    }
+                }
+            }
+
         }
 
         private void RemoveInfrequentFeatures(bool[] disabledFeatures, Dictionary<int, int[]> featureMatrix)

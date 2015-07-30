@@ -12,10 +12,11 @@
     {
         static void Main(string[] args)
         {
-            Logger.Initialize();            
-            Analysis();
-            // Evaluation();
-            //Training();
+            Logger.Initialize();
+            //DatasetCleanupHelper.CleanupDirectory(@"Data\DataSets", @"Data\CleanDataSets", @"Data\Other\CommonPrefixes\");   
+            Model m = null;
+            m = Training();
+            Evaluation(m);
             Console.ReadLine();
         }
 
@@ -74,7 +75,7 @@
             Logger.Log("Sets loaded");
 
             var featureSpace = featurizer.CreateFeatureSpace(entities);
-            Logger.Log("Feature space created");
+            Logger.Log("Feature space created, {0} features", featureSpace.Size);
 
             var learner = new Learner(featurizer);
 

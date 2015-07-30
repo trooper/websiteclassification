@@ -18,18 +18,22 @@ namespace PsiMl.WebsiteClasification
 
             Stack<string> directories = new Stack<string>();
             directories.Push(directoryPath);
-            var directoryName = new System.IO.DirectoryInfo(directoryPath).Name;            
+            var directoryName = new System.IO.DirectoryInfo(directoryPath).Name;
+
+            var commonPrefixesFiles = System.IO.Directory.EnumerateFiles(commonPrefixesDirPath).ToList<string>();
+            for (int i = 0; i < commonPrefixesFiles.Count; i++)
+                commonPrefixesFiles[i] = new System.IO.FileInfo(commonPrefixesFiles[i]).Name;
             
             while (directories.Count > 0)
             {
                 var dir = directories.Pop();
                 var subdirs = System.IO.Directory.EnumerateDirectories(dir);
-                foreach(var subdir in subdirs)
+                foreach (var subdir in subdirs)
                 {
                     Logger.Log("Subdirectory {0}", subdir);
                     directories.Push(subdir);
                 }
-                
+
                 var files = System.IO.Directory.EnumerateFiles(dir).ToList<string>();
                 // Poor coding
                 if (files.Count == 0)
@@ -47,10 +51,19 @@ namespace PsiMl.WebsiteClasification
                 if (!System.IO.Directory.Exists(cleanSubdir))
                     System.IO.Directory.CreateDirectory(cleanSubdir);
 
-                foreach(var file in files)
+                foreach (var file in files)
                 {
                     //CleanupFile(file, cleanDirectoryPath + path);
-                    CleanupFileTroopersStyle(file, cleanDirectoryPath + path, commonPrefixesDirPath);
+                    var pathfile = file.Substring(file.IndexOf(directoryName) + directoryName.Length);
+                    if (commonPrefixesFiles.Contains(new System.IO.FileInfo(file).Name))
+                    {
+                        CleanupFileTroopersStyle(file, cleanDirectoryPath + pathfile, commonPrefixesDirPath);
+                    }
+                    else
+                    {
+                        System.IO.File.Copy(file, cleanDirectoryPath + pathfile, true);
+                        Logger.Log("Skipping file...");
+                    }
                 }
             }
         }
@@ -70,45 +83,37 @@ namespace PsiMl.WebsiteClasification
                     commonPrefixes.Add(line, false);
                 }
             }
-            using (var redudantWriter = new System.IO.StreamWriter("dump.txt"))
+            using (var writer = new System.IO.StreamWriter(cleanDatasetPath))
             {
-                using (var writer = new System.IO.StreamWriter(cleanDatasetPath))
+                long lineCounter = 0;
+                long writtenLineCounter = 0;
+                foreach (var line in System.IO.File.ReadLines(datasetPath))
                 {
-                    long lineCounter = 0;
-                    long writtenLineCounter = 0;
-                    foreach (var line in System.IO.File.ReadLines(datasetPath))
+                    var lineData = line.Split('\t');
+                    var url = lineData[0];
+                    bool writenWithPrefix = false;
+                    foreach (var commonPrefix in commonPrefixes)
                     {
-                        var lineData = line.Split('\t');
-                        var url = lineData[0];
-                        bool writenWithPrefix = false;
-                        foreach (var commonPrefix in commonPrefixes)
+                        if (url.StartsWith(commonPrefix.Key))
                         {
-                            if (url.StartsWith(commonPrefix.Key))
+                            writenWithPrefix = true;
+                            if (commonPrefix.Value == false)
                             {
-                                writenWithPrefix = true;
-                                if (commonPrefix.Value == false)
-                                {
-                                    writer.WriteLine(line);
-                                    writtenLineCounter++;
-                                    commonPrefixes[commonPrefix.Key] = true;
-                                    break;
-                                }
+                                writer.WriteLine(line);
+                                writtenLineCounter++;
+                                commonPrefixes[commonPrefix.Key] = true;
+                                break;
                             }
                         }
-                        if (!writenWithPrefix)
-                        {
-                            writtenLineCounter++;
-                            writer.WriteLine(line);
-                        }
-                        else
-                        {
-                            redudantWriter.WriteLine(url);
-                        }
-                        lineCounter++;
-                        if (lineCounter % 1000 == 0)
-                            Logger.Log("{0} {1}", lineCounter, writtenLineCounter);
                     }
+                    if (!writenWithPrefix)
+                    {
+                        writtenLineCounter++;
+                        writer.WriteLine(line);
+                    }
+                    lineCounter++;
                 }
+                Logger.Log("{0} {1}", lineCounter, writtenLineCounter);
             }
         }
         /*

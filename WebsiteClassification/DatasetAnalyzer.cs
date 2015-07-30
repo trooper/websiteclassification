@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace PsiMl.WebsiteClasification
 {
     class DatasetAnalyzer
@@ -22,11 +21,13 @@ namespace PsiMl.WebsiteClasification
         {
             var labeledCount = new Dictionary<Target, int>();
             var totalCount = new Dictionary<Target, int>();
-            
+            var keywordCount = new Dictionary<Target, Dictionary<string, int>>();
+
             foreach (Target t in Enum.GetValues(typeof(Target)))
             {
                 labeledCount.Add(t, 0);
                 totalCount.Add(t, 0);
+                keywordCount.Add(t, new Dictionary<string, int>());
             }
 
             foreach(var entity in entities)
@@ -37,35 +38,47 @@ namespace PsiMl.WebsiteClasification
                 {
                     var document = new HtmlDocument();
                     document.LoadHtml(page.Content);
-                    var nodes = document.DocumentNode.SelectNodes("/html/head/meta[@name=\"description\"]/@content");
-
-                    /*
-                    if (nodes == null)
-                        nodes = document.DocumentNode.SelectNodes("/html/head/meta[@name=\"keywords\"]/@content");
-                    else
-                        nodes = (HtmlNodeCollection)nodes.Union(document.DocumentNode.SelectNodes("/html/head/meta[@name=\"keywords\"]/@content"));
-                    */
+                    var nodes = document.DocumentNode.SelectNodes("/html/head/meta[@name=\"description\" or @name=\"keywords\"]/@content");
 
                     if(nodes != null)
                     {
                         foreach (var node in nodes)
                         {
-                            if (!String.IsNullOrEmpty(node.Attributes["content"].Value)) count++;
+                            if (!String.IsNullOrEmpty(node.Attributes["content"].Value))
+                            {
+                                count++;
+                                IEnumerable<string> words = node.Attributes["content"].Value.Split(new char[] { ' ', ',' });
+                                foreach(var word in words)
+                                {
+                                    int val = 0;
+                                    keywordCount[entity.Label].TryGetValue(word, out val);
+                                    keywordCount[entity.Label][word] = val + 1;
+                                }
+                            }
+
                         }
                     } 
                 }
-                totalCount[entity.Label] ++;
 
+                totalCount[entity.Label] ++;
                 if(count > 0)
                 {
                     labeledCount[entity.Label]++;
-
-                    //Console.WriteLine("{0} : {1}", entity.Label.ToString(), webSite.Domain);
                 }
             }
             foreach( Target t in Enum.GetValues(typeof ( Target)))
             {
                 Logger.Log("{0} : {1} / {2} = {3}", t.ToString(), labeledCount[t], totalCount[t], (double)labeledCount[t] / totalCount[t]);
+            }
+            foreach (var dict in keywordCount)
+            {
+                using (System.IO.StreamWriter sw = new System.IO.StreamWriter(@"Data\Other\KeywordCounts\"+dict.Key.ToString()+".txt"))
+                {
+                    foreach(var pair in dict.Value)
+                    {
+                        sw.WriteLine("{0, 8} {1}", pair.Value, pair.Key);
+                    }
+                }
             }
         }
     }

@@ -35,7 +35,8 @@
             var files = System.IO.Directory.GetFiles(directory);
             foreach (var file in files)
             {
-                if (random.NextDouble() <= sampleRate)
+                long size = new System.IO.FileInfo(file).Length;
+                if (random.NextDouble() <= sampleRate && size < 1024*1024)
                 {
                     string domain = System.IO.Path.GetFileName(file);
                     yield return this.Read(file, domain, label);

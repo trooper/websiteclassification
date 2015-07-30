@@ -13,19 +13,42 @@
         static void Main(string[] args)
         {
             Logger.Initialize();
+            Analysis();
             // Evaluation();
-            Training();
+            //Training();
             Console.ReadLine();
+        }
+
+        static void Analysis()
+        {
+            var reader = new Reader();
+            var categories = new Tuple<String, Target> [] {
+                Tuple.Create("Accommodation", Target.Accomodation),
+                Tuple.Create("Restaurant", Target.Restaurant),
+                Tuple.Create("Retail", Target.Retail),
+                Tuple.Create("Other", Target.Other) };
+            var labeledEntities = new List<IEnumerable<MLEntity>>();
+            
+            foreach (var category in categories)
+            {
+                labeledEntities.Add(reader.ReadAll(@"Data\DataSets\" + category.Item1, category.Item2));
+            }
+
+            var allEntities = labeledEntities[0].Union(labeledEntities[1]).Union(labeledEntities[2]).Union(labeledEntities[3]);
+
+            var analyzer = new DatasetAnalyzer(allEntities);
+            analyzer.Analyze();
+
         }
 
         static void Evaluation()
         {
             var reader = new Reader();
-            var model = new Model(@"d:\Data\model");
+            var model = new Model(@"Data\model");
             var evaluator = new Evaluation(model);
 
-            var positive = reader.ReadAll(@"d:\Data\DataSets\Restaurant", Target.Restaurant);
-            var negative = reader.ReadAll(@"d:\Data\DataSets\Other", Target.Other);
+            var positive = reader.ReadAll(@"Data\DataSets\Restaurant", Target.Restaurant);
+            var negative = reader.ReadAll(@"Data\DataSets\Other", Target.Other);
 
             var entities = positive.Union(negative).ToArray();
             Logger.Log("Sets loaded");
@@ -43,10 +66,10 @@
         {
             var reader = new Reader();
             var featurizer = new Featurizer();
-            featurizer.Whitelist = new HashSet<string>(System.IO.File.ReadLines(@"d:\Data\Features\RestaurantWhitelist.txt").Select(l => l.Split('\t').First()));
+            featurizer.Whitelist = new HashSet<string>(System.IO.File.ReadLines(@"Data\Features\RestaurantWhitelist.txt").Select(l => l.Split('\t').First()));
 
-            var positive = reader.ReadAll(@"d:\Data\DataSets\Restaurant", Target.Restaurant);
-            var negative = reader.ReadAll(@"d:\Data\DataSets\Other", Target.Other);
+            var positive = reader.ReadAll(@"Data\DataSets\Restaurant", Target.Restaurant);
+            var negative = reader.ReadAll(@"Data\DataSets\Other", Target.Other);
 
             var entities = positive.Union(negative).ToArray();
             Logger.Log("Sets loaded");
@@ -60,7 +83,7 @@
             var model = learner.Learn(entities, entities.Length, featureSpace, targets);
             Logger.Log("Model learned");
 
-            model.Save(@"d:\Data\model");
+            model.Save(@"Data\model");
             Logger.Log("Model serialized to file");
         }
     }

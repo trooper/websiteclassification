@@ -12,7 +12,12 @@
     {
         static void Main(string[] args)
         {
-            Logger.Initialize();            
+            Logger.Initialize();
+            /*
+            DatasetCleanupHelper.CleanupDirectory(@"C:\Users\Nikola\Desktop\Project\Data", @"C:\Users\Nikola\Desktop\Project\CleanData", @"C:\Users\Nikola\Desktop\Project\UrlAnalysis\CommonPrefixes\");
+            Console.ReadLine();
+            return;
+            */
             Analysis();
             // Evaluation();
             //Training();

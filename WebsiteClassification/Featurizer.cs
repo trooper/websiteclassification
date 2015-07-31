@@ -4,6 +4,7 @@
     using System.Linq;
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
+    using Accord.Statistics.Visualizations;
 
     public class Featurizer
     {
@@ -27,8 +28,13 @@
             var featureSpace = new FeatureSpace();
             int numberOfTargets = Enum.GetValues(typeof(Target)).Length;
 
-            // Frequency matrix, featureMatrix[k][t] indicates the number of appearances of feature K in entities of target T
-            // var featureMatrix = new Dictionary<int, int[]>();
+            var targetCount = new Dictionary<Target, int>();
+            foreach(Target t in Enum.GetValues(typeof(Target)))
+            {
+                targetCount.Add(t, 0);
+            }
+           
+            var freqTable = new Dictionary<string, Dictionary<Target, int>>();
 
             foreach (var entity in entities)
             {
@@ -37,24 +43,52 @@
                     var featureIndex = featureSpace.GetFeatureIndex(feature);
                     if (featureIndex == null)
                     {
-                        featureSpace.AddFeature(feature);
+                        if (!freqTable.ContainsKey(feature.Name))
+                        {
+                            freqTable[feature.Name][entity.Label] = 0;
+                        }
+                        if (!freqTable[feature.Name].ContainsKey(entity.Label))
+                        {
+                            freqTable[feature.Name][entity.Label] = 0;
+                        }
+                        freqTable[feature.Name][entity.Label]++;
                     }
-
-                    //int[] matrix;
-                    //if (!featureMatrix.TryGetValue(featureIndex, out matrix))
-                    //{
-                    //    matrix = this.InitializeFeatureMatrix(numberOfTargets);
-                    //    featureMatrix[featureIndex] = matrix;
-                    //}
-
-                    //++matrix[(int)entity.Label];
+                    targetCount[entity.Label]++;
                 }
             }
+            using (var writer = new System.IO.StreamWriter(@"histogram_data.csv"))
+            {
+                long totalEntities = entities.Count<MLEntity>();
+                foreach (var featureFreq in freqTable)
+                {
+                    var totalFreq = featureFreq.Value.Values.Sum();
+                    foreach (Target target in Enum.GetValues(typeof(Target)))
+                    {
+                        float[,] M = new float[2, 2];
 
-            // int numberOfFeatures = featureToIndex.Count;
-            // var disabledFeatures = new bool[numberOfFeatures];
-            // this.RemoveInfrequentFeatures(disabledFeatures, featureMatrix
-            // pack the features to remove unused ones
+                        M[0, 0] = (1 / totalFreq) * (totalEntities - totalFreq - targetCount[target] + featureFreq.Value[target]);
+                        M[0, 1] = (1 / totalFreq) * (totalFreq - featureFreq.Value[target]);
+                        M[1, 0] = (1 / totalFreq) * (targetCount[target] - featureFreq.Value[target]);
+                        M[1, 1] = (1 / totalFreq) * (featureFreq.Value[target]);
+
+                        float pci = totalFreq / (float)totalEntities;
+                        float pfj = totalFreq / (float)totalEntities;
+
+                        float[,] A = new float[2, 2];
+                        A[0, 0] = (float)(M[0, 0] * Math.Log(M[0, 0] / (1 - pci) * (1 - pfj)));
+                        A[0, 1] = (float)(M[0, 1] * Math.Log(M[0, 1] / (1 - pci) * pfj));
+                        A[1, 0] = (float)(M[1, 0] * Math.Log(M[1, 0] / pci * (1 - pfj)));
+                        A[1, 1] = (float)(M[1, 1] * Math.Log(M[1, 1] / pci * pfj));
+
+                        var score = A.Cast<float>().Sum();
+                        var probF = -(pfj * Math.Log(pfj) + (1 - pfj) * Math.Log(1 - pfj));
+                        var probC = -(pci * Math.Log(pci) + (1 - pci) * Math.Log(1 - pci));
+
+                        var normalizedScore = score / Math.Min(probC, probF);
+                        writer.WriteLine("{0},{1},{2}", target.ToString(), featureFreq.Key, normalizedScore);
+                    }
+                }
+            }
 
             return featureSpace;
         }

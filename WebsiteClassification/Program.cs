@@ -13,10 +13,11 @@
         static void Main(string[] args)
         {
             Logger.Initialize();
-            //DatasetCleanupHelper.CleanupDirectory(@"Data\DataSets", @"Data\CleanDataSets", @"Data\Other\CommonPrefixes\");   
+            //DatasetCleanupHelper.CleanupDirectory(@"Data\DataSets", @"Data\CleanDataSets", @"Data\Other\CommonPrefixes\");
             Model m = null;
             m = Training();
-            //Evaluation(m);
+            ////Evaluation(m);
+            Console.WriteLine("Done!");
             Console.ReadLine();
         }
 
@@ -68,10 +69,14 @@
             var featurizer = new Featurizer();
             featurizer.Whitelist = new HashSet<string>(System.IO.File.ReadLines(@"Data\Features\RestaurantWhitelist.txt").Select(l => l.Split('\t').First()));
 
-            var positive = reader.ReadAll(@"Data\DataSets\Restaurant", Target.Restaurant);
-            var negative = reader.ReadAll(@"Data\DataSets\Other", Target.Other);
+            var entities = new List<MLEntity>();
 
-            var entities = positive.Union(negative).ToArray();
+
+            foreach(Target t in Enum.GetValues(typeof(Target)))
+            {
+                entities = (List<MLEntity>)entities.Union(reader.ReadAll(@"Data\DataSets\" + t.ToString(), t));
+            }
+
             Logger.Log("Sets loaded");
 
             var featureSpace = featurizer.CreateFeatureSpace(entities);
@@ -80,7 +85,7 @@
             var learner = new Learner(featurizer);
 
             var targets = new HashSet<Target>() { Target.Restaurant, Target.Other };
-            var model = learner.Learn(entities, entities.Length, featureSpace, targets);
+            var model = learner.Learn(entities, entities.Count, featureSpace, targets);
             Logger.Log("Model learned");
 
             model.Save(@"Data\model");

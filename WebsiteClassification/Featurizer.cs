@@ -61,7 +61,7 @@
             long totalEntities = featureSpace.NumEntities;
 
             const int howManyRandomFeatures = 200;
-            float randomThreshold = (float)howManyRandomFeatures / freqTable.Count;
+            float randomThreshold = (float)howManyRandomFeatures / (freqTable.Count * Enum.GetValues(typeof(Target)).Length);
 
             foreach (var featureFreq in freqTable)
             {

@@ -15,8 +15,8 @@
             Logger.Initialize();
             //DatasetCleanupHelper.CleanupDirectory(@"Data\DataSets", @"Data\CleanDataSets", @"Data\Other\CommonPrefixes\");
             Model m = null;
-            m = Training();
-            ////Evaluation(m);
+            //m = Training();
+            Evaluation(m);
             Console.WriteLine("Done!");
             Console.ReadLine();
         }
@@ -45,16 +45,10 @@
         static void Evaluation(Model m = null)
         {
             var reader = new Reader();
-            var model = m == null ? new Model(@"\Data\model") : m;
+            var model = m == null ? new Model(@"Data\model") : m;
             var evaluator = new Evaluation(model);
 
-            var positive = reader.EnumerateTarget(@"Data\DataSets\Restaurant", Target.Restaurant);
-            var negative = reader.EnumerateTarget(@"Data\DataSets\Other", Target.Other);
-
-            var entities = positive.Union(negative);
-            Logger.Log("Sets loaded");
-
-            var results = evaluator.Evaluate(entities);
+            var results = evaluator.Evaluate(Entities());
             Logger.Log("Evaluation done");
 
             foreach (var result in results)

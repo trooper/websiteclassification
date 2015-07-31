@@ -15,6 +15,8 @@ namespace PsiMl.WebsiteClasification
         public Blacklist(string path)
         {
             this.path = path;
+            list = new HashSet<string>();
+
             foreach(var line in File.ReadAllLines(path))
             {
                 list.Add(line);

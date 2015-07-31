@@ -48,7 +48,7 @@
             var model = m == null ? new Model(@"Data\model") : m;
             var evaluator = new Evaluation(model);
 
-            var results = evaluator.Evaluate(Entities());
+            var results = evaluator.Evaluate(Entities(@"Data\ValidationSet"));
             Logger.Log("Evaluation done");
 
             foreach (var result in results)
@@ -57,17 +57,16 @@
             }
         }
 
-        static private List<MLEntity> entityList = null;
+        static private MLEntity[] entityList = null;
 
         static IEnumerable<MLEntity> Entities(string path = @"Data\DataSets", double entitiesSampleRate = 1)
         {
             if(entityList == null)
             {
                 var reader = new Reader();
-                entityList = reader.EnumerateAllTargets(path, entitiesSampleRate).ToList();
+                entityList = reader.EnumerateAllTargets(path, entitiesSampleRate).ToArray();
             }
-
-            return entityList;
+            return entityList;        
         }
 
         static Model Training()

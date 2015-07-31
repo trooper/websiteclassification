@@ -4,6 +4,7 @@
     using System.Linq;
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
+    using System.IO;
     using Accord.Statistics.Visualizations;
 
     public class Featurizer
@@ -16,7 +17,7 @@
         {
             var pattern = @"[\w]+";
             this.regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace);
-            storage = new HTMLStorage();
+            //storage = new HTMLStorage();
         }
 
         public Blacklist Blacklist { get; set; }
@@ -24,7 +25,7 @@
         public FeatureSpace CreateFeatureSpace(IEnumerable<MLEntity> entities)
         {
             Random rnd = new Random(42);
-            const float byClassThreshold = 0.02f;
+            float byClassThreshold = 0.02f;
             var featureSpace = new FeatureSpace();
             int numberOfTargets = Enum.GetValues(typeof(Target)).Length;
 
@@ -41,7 +42,7 @@
             featureSpace.NumEntities = 0;
             foreach (var entity in entities)
             {
-                LoadEntityPagesHTML(entity);
+                //LoadEntityPagesHTML(entity);
                 ++featureSpace.NumEntities;
                 foreach (var feature in this.ExtractMetaFeatures(entity).Concat(this.ExtractFeaturesFromUnigrams(entity.WebSite)))
                 {
@@ -73,6 +74,16 @@
                     var normalizedScore = mutualCalc.Calculate(featureFreq.Value, target);
                     bool useFeature = false;
 
+                    var normalizedScoreThreshold = 0.0;
+                    var normalizedScoreCeil = double.MaxValue;
+
+                    if (featureFreq.Key.StartsWith("r"))
+                    {
+                        normalizedScoreThreshold = 120;
+                        normalizedScoreCeil = 250;
+                        byClassThreshold = 0.04f;
+                    }
+
                     foreach (Target t in Enum.GetValues(typeof(Target)))
                     {
                         if ((float)featureFreq.Value[t] / targetCount[t] > byClassThreshold)
@@ -80,15 +91,6 @@
                             useFeature = true;
                             break;
                         }
-                    }
-
-                    var normalizedScoreThreshold = 0.0;
-                    var normalizedScoreCeil = double.MaxValue;
-
-                    if (featureFreq.Key.StartsWith("r"))
-                    {
-                        normalizedScoreThreshold = 0.5;
-                        normalizedScoreCeil = 30;
                     }
 
                     if (normalizedScore > normalizedScoreThreshold && normalizedScore < normalizedScoreCeil)
@@ -217,7 +219,10 @@
 
         public IEnumerable<string> ExtractXPath(WebPage page, string xPath)
         {
-            var document = storage.GetDocument(page);
+            //var document = storage.GetDocument(page);
+            var document = new HtmlAgilityPack.HtmlDocument();
+            document.LoadHtml(page.Content);
+
             if (String.IsNullOrEmpty(page.Content))
             {
                 yield return "empty";

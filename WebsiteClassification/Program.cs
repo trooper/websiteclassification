@@ -65,21 +65,25 @@
 
         static Model Training()
         {
+            const double entitiesSampleRate = 0.1;
+            Logger.Log("Begin training");
             var reader = new Reader();
             var featurizer = new Featurizer();
             featurizer.Whitelist = new HashSet<string>(System.IO.File.ReadLines(@"Data\Features\RestaurantWhitelist.txt").Select(l => l.Split('\t').First()));
 
             IEnumerable<MLEntity> entities;
 
+            Logger.Log("Reading sets ({0}%)", entitiesSampleRate * 10);
+
             Target firstTarget = (Target)0;
-            entities = reader.ReadAll(@"Data\DataSets\" + firstTarget.ToString(), firstTarget);
+            entities = reader.ReadAll(@"Data\DataSets\" + firstTarget.ToString(), firstTarget, entitiesSampleRate);
             var targets = new HashSet<Target>();
 
             foreach (Target t in Enum.GetValues(typeof(Target)))
             {
                 targets.Add(t);
                 if(t!=firstTarget)
-                    entities = entities.Union(reader.ReadAll(@"Data\DataSets\" + t.ToString(), t));
+                    entities = entities.Union(reader.ReadAll(@"Data\DataSets\" + t.ToString(), t, entitiesSampleRate));
             }
 
             Logger.Log("Sets loaded");

@@ -9,6 +9,15 @@
         // Keep a mapping from each unique feature name to a unique index.
         private Dictionary<string, int> features = new Dictionary<string, int>();
 
+        public Dictionary<string, int> Features
+        {
+            get
+            {
+                return features;
+            }
+        }
+
+
         public static FeatureSpace LoadFromFile(string path)
         {
             int count = 0;

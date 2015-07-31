@@ -56,18 +56,6 @@
       <HintPath>..\packages\Accord.2.15.0\lib\net45\Accord.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Accord.MachineLearning, Version=2.15.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Accord.MachineLearning.2.15.0\lib\net45\Accord.MachineLearning.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Accord.Math, Version=2.15.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Accord.Math.2.15.0\lib\net45\Accord.Math.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Accord.Statistics, Version=2.15.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Accord.Statistics.2.15.0\lib\net45\Accord.Statistics.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="AForge, Version=2.2.5.0, Culture=neutral, PublicKeyToken=c1db6ff4eaa06aeb, processorArchitecture=MSIL">
       <HintPath>..\packages\AForge.2.2.5\lib\AForge.dll</HintPath>
       <Private>True</Private>
@@ -113,6 +101,24 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Accord.Core\Accord.Core.csproj">
+      <Project>{a177a90c-8207-466a-af70-f2b8452a42ac}</Project>
+      <Name>Accord.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Accord.MachineLearning\Accord.MachineLearning.csproj">
+      <Project>{7ab4bbcc-6222-423d-9ff9-ba9cb7c09199}</Project>
+      <Name>Accord.MachineLearning</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Accord.Math\Accord.Math.csproj">
+      <Project>{f718e9a8-db62-4785-8c49-4333a60d256a}</Project>
+      <Name>Accord.Math</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Accord.Statistics\Accord.Statistics.csproj">
+      <Project>{fd8101dd-c95d-42d6-ad44-ae01c25f2811}</Project>
+      <Name>Accord.Statistics</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

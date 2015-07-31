@@ -51,7 +51,8 @@
         public int AddFeature(Feature feature)
         {
             int count = this.features.Count;
-            this.features.Add(feature.Name, count);
+            if (!this.features.ContainsKey(feature.Name))
+                this.features.Add(feature.Name, count);
             return count;
         }
     }

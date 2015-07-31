@@ -57,10 +57,17 @@
             }
         }
 
+        static private List<MLEntity> entityList = null;
+
         static IEnumerable<MLEntity> Entities(string path = @"Data\DataSets", double entitiesSampleRate = 1)
         {
-            var reader = new Reader();
-            return reader.EnumerateAllTargets(path, entitiesSampleRate);
+            if(entityList == null)
+            {
+                var reader = new Reader();
+                entityList = reader.EnumerateAllTargets(path, entitiesSampleRate).ToList();
+            }
+
+            return entityList;
         }
 
         static Model Training()

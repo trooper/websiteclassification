@@ -44,7 +44,7 @@
                 Logger.Log("Iteration: {0}", iteration);
                 delta = lbnr.Run(featureMatrix, labels);
                 iteration++;
-            } while (iteration < 10 && delta > 1e-6);
+            } while (iteration < 20 && delta > 1e-6);
 
             return new Model(regression, this.featurizer, featureSpace, targets);
         }

@@ -32,18 +32,21 @@
 
         public IEnumerable<MLEntity> EnumerateTarget(string directory, Target label, double sampleRate = 1.0)
         {
-            Logger.Log("Enumerating target {0}", label.ToString());
             var random = new Random(42); // reci NE nederminizmu
             var files = System.IO.Directory.GetFiles(directory);
+            int count = 0;
+
             foreach (var file in files)
             {
                 long size = new System.IO.FileInfo(file).Length;
-                if (random.NextDouble() <= sampleRate && size < 1024*1024)
+                if (random.NextDouble() <= sampleRate && size < 2 * 1024*1024)
                 {
                     string domain = System.IO.Path.GetFileName(file);
+                    ++count;
                     yield return this.ReadFile(file, domain, label);
                 }
             }
+            Logger.Log("{0} entities with label {1}", count, label.ToString());
         }
 
         public IEnumerable<MLEntity> EnumerateAllTargets(string directory, double sampleRate = 1.0)

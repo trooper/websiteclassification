@@ -91,16 +91,13 @@
                     var normalizedScore = score / Math.Min(probC, probF);
       
                     
-                    if (normalizedScore > 0 && normalizedScore < 50)
+                    if (normalizedScore > 0 && (float)totalFreq/totalEntities > 0.02)
                     {
-                        if (rnd.NextDouble() < randomThreshold)
+                        featureSpace.AddFeature(new Feature()
                         {
-                            featureSpace.AddFeature(new Feature()
-                            {
-                                Name = featureFreq.Key,
-                                Value = 1.0
-                            });
-                        }
+                            Name = featureFreq.Key,
+                            Value = 1.0
+                        });
                     }
                 }
             }
@@ -130,7 +127,7 @@
 
         public IEnumerable<Feature> ExtractFeatures(WebSite webSite)
         {
-            const string metaTagXPath= "//meta[@name=\"description\" or @name=\"keywords\"]/@content | //title/@content";
+            const string metaTagXPath= "/html/head/meta[@name=\"description\" or @name=\"keywords\"]/@content | /html/head/title/@content | //h1/@content | //h2/@content";
 
             var ngrams = new HashSet<string>();
             foreach (var page in webSite.Pages)

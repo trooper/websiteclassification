@@ -2,12 +2,13 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
 
     public class Reader
     {
-        public MLEntity Read(string file, string domain, Target label, double sampleRate = 1.0)
+        public MLEntity ReadFile(string file, string domain, Target label, double sampleRate = 1.0)
         {
-            var random = new Random();
+            var random = new Random(42);
             MLEntity entity = new MLEntity();
             entity.Label = label;
             entity.WebSite = new WebSite()
@@ -29,9 +30,10 @@
             return entity;
         }
 
-        public IEnumerable<MLEntity> ReadAll(string directory, Target label, double sampleRate = 1.0)
+        public IEnumerable<MLEntity> EnumerateTarget(string directory, Target label, double sampleRate = 1.0)
         {
-            var random = new Random();
+            Logger.Log("Enumerating target {0}", label.ToString());
+            var random = new Random(42); // reci NE nederminizmu
             var files = System.IO.Directory.GetFiles(directory);
             foreach (var file in files)
             {
@@ -39,7 +41,19 @@
                 if (random.NextDouble() <= sampleRate && size < 1024*1024)
                 {
                     string domain = System.IO.Path.GetFileName(file);
-                    yield return this.Read(file, domain, label);
+                    yield return this.ReadFile(file, domain, label);
+                }
+            }
+        }
+
+        public IEnumerable<MLEntity> EnumerateAllTargets(string directory, double sampleRate = 1.0)
+        {
+            Logger.Log("Enumerating all targets");
+            foreach (Target t in Enum.GetValues(typeof(Target)))
+            {
+                foreach(var entity in EnumerateTarget(Path.Combine(directory, t.ToString()), t, sampleRate))
+                {
+                    yield return entity;
                 }
             }
         }

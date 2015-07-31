@@ -9,6 +9,19 @@
         // Keep a mapping from each unique feature name to a unique index.
         private Dictionary<string, int> features = new Dictionary<string, int>();
 
+        private int numEntities;
+        public int NumEntities
+        {
+            get
+            {
+                return numEntities;
+            }
+            set
+            {
+                numEntities = value;
+            }
+        }
+
         public Dictionary<string, int> Features
         {
             get

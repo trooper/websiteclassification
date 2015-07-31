@@ -9,7 +9,7 @@
     public class Featurizer
     {
         private const int MinimumFeatureCount = 5;
-        private Regex regex;
+        private Regex regex;    
 
         public Featurizer()
         {
@@ -25,6 +25,7 @@
 
         public FeatureSpace CreateFeatureSpace(IEnumerable<MLEntity> entities)
         {
+            Random rnd = new Random(42);
             var featureSpace = new FeatureSpace();
             int numberOfTargets = Enum.GetValues(typeof(Target)).Length;
 
@@ -38,8 +39,10 @@
 
             long entitiesxfeatures = 0;
 
+            featureSpace.NumEntities = 0;
             foreach (var entity in entities)
             {
+                ++featureSpace.NumEntities;
                 foreach (var feature in this.ExtractFeatures(entity))
                 {
                     if (!freqTable.ContainsKey(feature.Name))
@@ -55,7 +58,11 @@
                 }
                 targetCount[entity.Label]++;
             }
-            long totalEntities = entities.Count<MLEntity>();
+            long totalEntities = featureSpace.NumEntities;
+
+            const int howManyRandomFeatures = 200;
+            float randomThreshold = (float)howManyRandomFeatures / freqTable.Count;
+
             foreach (var featureFreq in freqTable)
             {
                 var totalFreq = featureFreq.Value.Values.Sum();
@@ -82,10 +89,8 @@
                     var probC = -(pci * Math.Log(pci) + (1 - pci) * Math.Log(1 - pci));
 
                     var normalizedScore = score / Math.Min(probC, probF);
-
-                    const int howManyRandomFeatures = 200;
-                    float randomThreshold = howManyRandomFeatures / (float)featureSpace.Size;
-                    Random rnd = new Random();
+      
+                    
                     if (normalizedScore > 0 && normalizedScore < 50)
                     {
                         if (rnd.NextDouble() < randomThreshold)
@@ -100,7 +105,6 @@
                 }
             }
 
-            Logger.Log("Created space of {0} features", featureSpace.Size);
             return featureSpace;
         }
 

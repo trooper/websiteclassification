@@ -71,12 +71,12 @@
         }
 
         static Model Training()
-        {
-            
+        {   
             Logger.Log("Begin training");
             var reader = new Reader();
             var featurizer = new Featurizer();
-            //featurizer.Whitelist = new HashSet<string>(System.IO.File.ReadLines(@"Data\Features\RestaurantWhitelist.txt").Select(l => l.Split('\t').First()));
+         
+            featurizer.Blacklist = new Blacklist(@"Data\Features\Blacklist.txt");
 
             var targets = new HashSet<Target>();
             foreach (Target t in Enum.GetValues(typeof(Target)))

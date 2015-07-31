@@ -9,23 +9,22 @@
     public class Featurizer
     {
         private const int MinimumFeatureCount = 5;
-        private Regex regex;    
+        private Regex regex;
+        private HTMLStorage storage;
 
         public Featurizer()
         {
-            // ignore everything in pattern regex 
-            //var pattern = @"[^\s \t \r\n,;.!`>@$*\[\]()_\-?{}""'/:|#&]+"; // za splitovanje
             var pattern = @"[\w]+";
             this.regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace);
+            storage = new HTMLStorage();
         }
 
-        public HashSet<string> Whitelist { get; set; }
-
-        public HashSet<string> Blacklist { get; set; }
+        public Blacklist Blacklist { get; set; }
 
         public FeatureSpace CreateFeatureSpace(IEnumerable<MLEntity> entities)
         {
             Random rnd = new Random(42);
+            const float byClassThreshold = 0.02f;
             var featureSpace = new FeatureSpace();
             int numberOfTargets = Enum.GetValues(typeof(Target)).Length;
 
@@ -42,8 +41,9 @@
             featureSpace.NumEntities = 0;
             foreach (var entity in entities)
             {
+                LoadEntityPagesHTML(entity);
                 ++featureSpace.NumEntities;
-                foreach (var feature in this.ExtractFeatures(entity))
+                foreach (var feature in this.ExtractMetaFeatures(entity).Concat(this.ExtractFeaturesFromUnigrams(entity.WebSite)))
                 {
                     if (!freqTable.ContainsKey(feature.Name))
                     {
@@ -58,6 +58,8 @@
                 }
                 targetCount[entity.Label]++;
             }
+
+            MutualInformationCalculator mutualCalc = new MutualInformationCalculator(targetCount);
             long totalEntities = featureSpace.NumEntities;
 
             const int howManyRandomFeatures = 200;
@@ -68,47 +70,89 @@
                 var totalFreq = featureFreq.Value.Values.Sum();
                 foreach (Target target in Enum.GetValues(typeof(Target)))
                 {
-                    float[,] M = new float[2, 2];
+                    var normalizedScore = mutualCalc.Calculate(featureFreq.Value, target);
+                    bool useFeature = false;
 
-                    M[0, 0] = (1f / totalEntities) * (totalEntities - totalFreq - targetCount[target] + featureFreq.Value[target]);
-                    M[0, 1] = (1f / totalEntities) * (totalFreq - featureFreq.Value[target]);
-                    M[1, 0] = (1f / totalEntities) * (targetCount[target] - featureFreq.Value[target]);
-                    M[1, 1] = (1f / totalEntities) * (featureFreq.Value[target]);
-
-                    float pci = totalFreq / (float)totalEntities;
-                    float pfj = totalFreq / (float)totalEntities;
-
-                    float[,] A = new float[2, 2];
-                    A[0, 0] = (M[0, 0] == 0) ? 0 : (float)(M[0, 0] * Math.Log(M[0, 0] / (1 - pci) * (1 - pfj)));
-                    A[0, 1] = (M[0, 1] == 0) ? 0 : (float)(M[0, 1] * Math.Log(M[0, 1] / (1 - pci) * pfj));
-                    A[1, 0] = (M[1, 0] == 0) ? 0 : (float)(M[1, 0] * Math.Log(M[1, 0] / pci * (1 - pfj)));
-                    A[1, 1] = (M[1, 1] == 0) ? 0 : (float)(M[1, 1] * Math.Log(M[1, 1] / pci * pfj));
-
-                    var score = A.Cast<float>().Sum();
-                    var probF = -(pfj * Math.Log(pfj) + (1 - pfj) * Math.Log(1 - pfj));
-                    var probC = -(pci * Math.Log(pci) + (1 - pci) * Math.Log(1 - pci));
-
-                    var normalizedScore = score / Math.Min(probC, probF);
-      
-                    
-                    if (normalizedScore > 0 && (float)totalFreq/totalEntities > 0.02)
+                    foreach (Target t in Enum.GetValues(typeof(Target)))
                     {
-                        featureSpace.AddFeature(new Feature()
+                        if ((float)featureFreq.Value[t] / targetCount[t] > byClassThreshold)
                         {
-                            Name = featureFreq.Key,
-                            Value = 1.0
-                        });
+                            useFeature = true;
+                            break;
+                        }
+                    }
+
+                    var normalizedScoreThreshold = 0.0;
+                    var normalizedScoreCeil = double.MaxValue;
+
+                    if (featureFreq.Key.StartsWith("r"))
+                    {
+                        normalizedScoreThreshold = 0.5;
+                        normalizedScoreCeil = 30;
+                    }
+
+                    if (normalizedScore > normalizedScoreThreshold && normalizedScore < normalizedScoreCeil)
+                    {
+                        if (useFeature)
+                        {
+                            featureSpace.AddFeature(new Feature()
+                            {
+                                Name = featureFreq.Key,
+                                Value = 1.0
+                            });
+                        }
+                    }
+                    else if (featureFreq.Key.StartsWith("r"))
+                    {
+                        Blacklist.Add(featureFreq.Key);
                     }
                 }
             }
-
             return featureSpace;
         }
 
+        public IEnumerable<Feature> ExtractFeaturesFromUnigrams(WebSite webSite)
+        {
+            const string unigramsXPath = "/html/body//text()";
+            var ngrams = new HashSet<string>();
+            foreach (var page in webSite.Pages)
+            {
+                foreach (var ngram in this.ExtractXPath(page, unigramsXPath))
+                {
+                    if (!ngrams.Contains(ngram))
+                    {
+                        ngrams.Add(ngram);
+
+                        var value = Feature.Type.RawText + ":" + ngram;
+                        bool use = false;
+
+                        if (this.Blacklist != null)
+                        {
+                            use = !this.Blacklist.Contains(value);
+                        }
+                        else
+                        {
+                            use = true;
+                        }
+
+                        if (use)
+                        {
+                            yield return new Feature
+                            {
+                                Name = value,
+                                Value = 1.0 // we use n-grams as binary features
+                            };
+                        }
+                    }
+                }
+            }
+            this.Blacklist.Save();
+        }
+        
         public double[] CreateFeatureVector(WebSite webSite, FeatureSpace featureSpace)
         {
             var vector = new double[featureSpace.Size];
-            foreach (var feature in this.ExtractFeatures(webSite))
+            foreach (var feature in this.ExtractMetaFeatures(webSite))
             {
                 var index = featureSpace.GetFeatureIndex(feature);
                 if (index.HasValue)
@@ -120,12 +164,20 @@
             return vector;
         }
 
-        public IEnumerable<Feature> ExtractFeatures(MLEntity entity)
+        public void LoadEntityPagesHTML(MLEntity entity)
         {
-            return this.ExtractFeatures(entity.WebSite);
+            foreach(var page in entity.WebSite.Pages)
+            {
+                storage.Add(page);
+            }
         }
 
-        public IEnumerable<Feature> ExtractFeatures(WebSite webSite)
+        public IEnumerable<Feature> ExtractMetaFeatures(MLEntity entity)
+        {
+            return this.ExtractMetaFeatures(entity.WebSite);
+        }
+
+        public IEnumerable<Feature> ExtractMetaFeatures(WebSite webSite)
         {
             const string metaTagXPath= "/html/head/meta[@name=\"description\" or @name=\"keywords\"]/@content | /html/head/title/@content | //h1/@content | //h2/@content";
 
@@ -165,14 +217,11 @@
 
         public IEnumerable<string> ExtractXPath(WebPage page, string xPath)
         {
-            var document = new HtmlAgilityPack.HtmlDocument();
-            document.LoadHtml(page.Content.ToLower());
-
+            var document = storage.GetDocument(page);
             if (String.IsNullOrEmpty(page.Content))
             {
                 yield return "empty";
             }
-
             else
             {
                 var nodes = document.DocumentNode.SelectNodes(xPath);
@@ -190,7 +239,6 @@
                     }
                 }
             }
-
         }
 
         private void RemoveInfrequentFeatures(bool[] disabledFeatures, Dictionary<int, int[]> featureMatrix)

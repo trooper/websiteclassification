@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" GroupingSetting="Access">
+  <Class Name="PsiMl.WebsiteClasification.DatasetAnalyzer">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAA=</HashCode>
+      <FileName>DatasetAnalyzer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.DatasetCleanupHelper">
+    <Position X="2.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DatasetCleanupHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.Evaluation">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAIAAA=</HashCode>
+      <FileName>Evaluation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.EvaluationResult">
+    <Position X="7.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAGAAAAAAAAEAEAAAEAIAAAAAAAAAAAAAAAAEAA=</HashCode>
+      <FileName>EvaluationResult.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.Feature">
+    <Position X="2.25" Y="2.5" Width="1.5" />
+    <NestedTypes>
+      <Class Name="PsiMl.WebsiteClasification.Feature.Type" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Feature.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Feature.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.FeatureSpace">
+    <Position X="9.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAgAGgAAABAAAAAAAAAACBAAAAAAAAEAA=</HashCode>
+      <FileName>FeatureSpace.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.Featurizer">
+    <Position X="5.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAIAAEAAAAAAAAAAAQQAAAAAAAAAIAAAAAAQQAAAQAA=</HashCode>
+      <FileName>Featurizer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.Learner">
+    <Position X="7.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
+      <FileName>Learner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.Logger">
+    <Position X="9.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAQAAAAAAAAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Logger.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.MLEntity">
+    <Position X="5.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MLEntity.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.Model">
+    <Position X="4" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQgIACAAAAAgAAAAAAAAAAAERAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.Prediction">
+    <Position X="13" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Prediction.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.Program">
+    <Position X="14.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAIAAAAAAAAAAAAAAEAAAAAAAAAEABAAAAAA=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.Reader">
+    <Position X="11.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAgAAAAAAAQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Reader.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.SomeExamples">
+    <Position X="14.75" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAgAAAAAAAAAAkAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>SomeExamples.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.WebPage">
+    <Position X="13" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAgAAAAAEAAAAAAAAAAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>WebPage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.WebSite">
+    <Position X="11.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAgAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>WebSite.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.WebTools">
+    <Position X="0.5" Y="2.5" Width="1.5" />
+    <NestedTypes>
+      <Class Name="PsiMl.WebsiteClasification.WebTools.DomainHelper" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>WebTools.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="PsiMl.WebsiteClasification.WebTools.Trie" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>WebTools.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="PsiMl.WebsiteClasification.WebTools.DomainHandler" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>WebTools.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAACAAAAEAAAAAAAAAAEAAAAAAACAAAQAEAAAAA=</HashCode>
+      <FileName>WebTools.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="PsiMl.WebsiteClasification.Target">
+    <Position X="2.25" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>JAAAABAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Target.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

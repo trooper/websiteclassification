@@ -32,14 +32,14 @@
 
         public IEnumerable<MLEntity> EnumerateTarget(string directory, Target label, double sampleRate = 1.0)
         {
-            var random = new Random(42); // reci NE nederminizmu
+            var random = new Random(42); // reci NE nedeterminizmu
             var files = System.IO.Directory.GetFiles(directory);
             int count = 0;
 
             foreach (var file in files)
             {
                 long size = new System.IO.FileInfo(file).Length;
-                if (random.NextDouble() <= sampleRate && size < 2 * 1024*1024)
+                if (random.NextDouble() <= sampleRate && size < 1024 * 1024)
                 {
                     string domain = System.IO.Path.GetFileName(file);
                     ++count;

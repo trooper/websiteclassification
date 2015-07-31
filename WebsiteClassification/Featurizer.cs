@@ -29,34 +29,34 @@
             int numberOfTargets = Enum.GetValues(typeof(Target)).Length;
 
             var targetCount = new Dictionary<Target, int>();
-            foreach(Target t in Enum.GetValues(typeof(Target)))
+            foreach (Target t in Enum.GetValues(typeof(Target)))
             {
                 targetCount.Add(t, 0);
             }
-           
+
             var freqTable = new Dictionary<string, Dictionary<Target, int>>();
+
+            long entitiesxfeatures = 0;
 
             foreach (var entity in entities)
             {
                 foreach (var feature in this.ExtractFeatures(entity))
                 {
-                    var featureIndex = featureSpace.GetFeatureIndex(feature);
-                    if (featureIndex == null)
+                    if (!freqTable.ContainsKey(feature.Name))
                     {
-                        if (!freqTable.ContainsKey(feature.Name))
+                        freqTable.Add(feature.Name, new Dictionary<Target, int>());
+                        foreach (Target target in Enum.GetValues(typeof(Target)))
                         {
-                            freqTable[feature.Name][entity.Label] = 0;
+                            freqTable[feature.Name].Add(target, 0);
                         }
-                        if (!freqTable[feature.Name].ContainsKey(entity.Label))
-                        {
-                            freqTable[feature.Name][entity.Label] = 0;
-                        }
-                        freqTable[feature.Name][entity.Label]++;
                     }
-                    targetCount[entity.Label]++;
+                    freqTable[feature.Name][entity.Label]++;
+                    entitiesxfeatures++;
                 }
+                targetCount[entity.Label]++;
             }
-            using (var writer = new System.IO.StreamWriter(@"histogram_data.csv"))
+
+            using (var writer = new System.IO.StreamWriter(@"Data\Other\histogram_data.csv"))
             {
                 long totalEntities = entities.Count<MLEntity>();
                 foreach (var featureFreq in freqTable)
@@ -66,19 +66,19 @@
                     {
                         float[,] M = new float[2, 2];
 
-                        M[0, 0] = (1 / totalFreq) * (totalEntities - totalFreq - targetCount[target] + featureFreq.Value[target]);
-                        M[0, 1] = (1 / totalFreq) * (totalFreq - featureFreq.Value[target]);
-                        M[1, 0] = (1 / totalFreq) * (targetCount[target] - featureFreq.Value[target]);
-                        M[1, 1] = (1 / totalFreq) * (featureFreq.Value[target]);
+                        M[0, 0] = (1f / totalEntities) * (totalEntities - totalFreq - targetCount[target] + featureFreq.Value[target]);
+                        M[0, 1] = (1f / totalEntities) * (totalFreq - featureFreq.Value[target]);
+                        M[1, 0] = (1f / totalEntities) * (targetCount[target] - featureFreq.Value[target]);
+                        M[1, 1] = (1f / totalEntities) * (featureFreq.Value[target]);
 
                         float pci = totalFreq / (float)totalEntities;
                         float pfj = totalFreq / (float)totalEntities;
 
                         float[,] A = new float[2, 2];
-                        A[0, 0] = (float)(M[0, 0] * Math.Log(M[0, 0] / (1 - pci) * (1 - pfj)));
-                        A[0, 1] = (float)(M[0, 1] * Math.Log(M[0, 1] / (1 - pci) * pfj));
-                        A[1, 0] = (float)(M[1, 0] * Math.Log(M[1, 0] / pci * (1 - pfj)));
-                        A[1, 1] = (float)(M[1, 1] * Math.Log(M[1, 1] / pci * pfj));
+                        A[0, 0] = (M[0, 0] == 0) ? 0 : (float)(M[0, 0] * Math.Log(M[0, 0] / (1 - pci) * (1 - pfj)));
+                        A[0, 1] = (M[0, 1] == 0) ? 0 : (float)(M[0, 1] * Math.Log(M[0, 1] / (1 - pci) * pfj));
+                        A[1, 0] = (M[1, 0] == 0) ? 0 : (float)(M[1, 0] * Math.Log(M[1, 0] / pci * (1 - pfj)));
+                        A[1, 1] = (M[1, 1] == 0) ? 0 : (float)(M[1, 1] * Math.Log(M[1, 1] / pci * pfj));
 
                         var score = A.Cast<float>().Sum();
                         var probF = -(pfj * Math.Log(pfj) + (1 - pfj) * Math.Log(1 - pfj));
@@ -115,10 +115,9 @@
 
         public IEnumerable<Feature> ExtractFeatures(WebSite webSite)
         {
+            var ngrams = new HashSet<string>();
             foreach (var page in webSite.Pages)
             {
-                var ngrams = new HashSet<string>();
-
                 foreach (var ngram in this.ExtractNGrams(page))
                 {
                     if (!ngrams.Contains(ngram))
@@ -164,7 +163,7 @@
             {
                 var nodes = document.DocumentNode.SelectNodes(
                     "//meta[@name=\"description\" or @name=\"keywords\"]/@content");
-                    //"or //h1/text() or //h2/text() or //h3/text() or //title/text()");
+                //"or //h1/text() or //h2/text() or //h3/text() or //title/text()");
                 //var nodes = document.DocumentNode.SelectNodes("//title/text()");
 
                 if (nodes != null)
@@ -174,7 +173,7 @@
                     {
                         foreach (Match token in regex.Matches(node.OuterHtml))
                         {
-                            if(token.Value.Length > 3)
+                            if (token.Value.Length > 3)
                                 yield return token.ToString();
                         }
                     }

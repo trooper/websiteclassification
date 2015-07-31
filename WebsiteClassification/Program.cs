@@ -16,7 +16,7 @@
             //DatasetCleanupHelper.CleanupDirectory(@"Data\DataSets", @"Data\CleanDataSets", @"Data\Other\CommonPrefixes\");   
             Model m = null;
             m = Training();
-            Evaluation(m);
+            //Evaluation(m);
             Console.ReadLine();
         }
 

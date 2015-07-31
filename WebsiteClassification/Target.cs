@@ -5,6 +5,6 @@
         Other = 0,
         Retail = 1,
         Restaurant = 2,
-        Accomodation = 3
+        Accommodation = 3
     }
 }

@@ -25,7 +25,7 @@
         {
             var reader = new Reader();
             var categories = new Tuple<String, Target> [] {
-                Tuple.Create("Accommodation", Target.Accomodation),
+                Tuple.Create("Accommodation", Target.Accommodation),
                 Tuple.Create("Restaurant", Target.Restaurant),
                 Tuple.Create("Retail", Target.Retail),
                 Tuple.Create("Other", Target.Other) };
@@ -69,12 +69,17 @@
             var featurizer = new Featurizer();
             featurizer.Whitelist = new HashSet<string>(System.IO.File.ReadLines(@"Data\Features\RestaurantWhitelist.txt").Select(l => l.Split('\t').First()));
 
-            var entities = new List<MLEntity>();
+            IEnumerable<MLEntity> entities;
 
+            Target firstTarget = (Target)0;
+            entities = reader.ReadAll(@"Data\DataSets\" + firstTarget.ToString(), firstTarget);
+            var targets = new HashSet<Target>();
 
-            foreach(Target t in Enum.GetValues(typeof(Target)))
+            foreach (Target t in Enum.GetValues(typeof(Target)))
             {
-                entities = (List<MLEntity>)entities.Union(reader.ReadAll(@"Data\DataSets\" + t.ToString(), t));
+                targets.Add(t);
+                if(t!=firstTarget)
+                    entities = entities.Union(reader.ReadAll(@"Data\DataSets\" + t.ToString(), t));
             }
 
             Logger.Log("Sets loaded");
@@ -84,8 +89,7 @@
 
             var learner = new Learner(featurizer);
 
-            var targets = new HashSet<Target>() { Target.Restaurant, Target.Other };
-            var model = learner.Learn(entities, entities.Count, featureSpace, targets);
+            var model = learner.Learn(entities, entities.Count(), featureSpace, targets);
             Logger.Log("Model learned");
 
             model.Save(@"Data\model");

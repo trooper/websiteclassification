@@ -15,7 +15,7 @@
             Logger.Initialize();
             //DatasetCleanupHelper.CleanupDirectory(@"Data\DataSets", @"Data\CleanDataSets", @"Data\Other\CommonPrefixes\");
             Model m = null;
-            //m = Training();
+            m = Training();
             Evaluation(m);
             Console.WriteLine("Done!");
             Console.ReadLine();
@@ -57,11 +57,10 @@
             }
         }
 
-        static IEnumerable<MLEntity> Entities()
+        static IEnumerable<MLEntity> Entities(string path = @"Data\DataSets", double entitiesSampleRate = 1)
         {
-            const double entitiesSampleRate = 0.1;
             var reader = new Reader();
-            return reader.EnumerateAllTargets(@"Data\DataSets", entitiesSampleRate);
+            return reader.EnumerateAllTargets(path, entitiesSampleRate);
         }
 
         static Model Training()

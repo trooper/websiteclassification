@@ -11,6 +11,7 @@
         public class Type
         {
             public const string RawText = "r";
+            public const string MetaTag = "m";
         }
 
         public string Name { get; set; }

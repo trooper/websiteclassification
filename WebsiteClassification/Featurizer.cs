@@ -55,7 +55,6 @@
                 }
                 targetCount[entity.Label]++;
             }
-
             using (var writer = new System.IO.StreamWriter(@"Data\Other\histogram_data.csv"))
             {
                 long totalEntities = entities.Count<MLEntity>();
@@ -71,6 +70,11 @@
                         M[1, 0] = (1f / totalEntities) * (targetCount[target] - featureFreq.Value[target]);
                         M[1, 1] = (1f / totalEntities) * (featureFreq.Value[target]);
 
+                        //M[0, 0] = (totalEntities - totalFreq - targetCount[target] + featureFreq.Value[target]);
+                        //M[0, 1] = (totalFreq - featureFreq.Value[target]);
+                        //M[1, 0] = (targetCount[target] - featureFreq.Value[target]);
+                        //M[1, 1] = (featureFreq.Value[target]);
+                        
                         float pci = totalFreq / (float)totalEntities;
                         float pfj = totalFreq / (float)totalEntities;
 
@@ -83,13 +87,30 @@
                         var score = A.Cast<float>().Sum();
                         var probF = -(pfj * Math.Log(pfj) + (1 - pfj) * Math.Log(1 - pfj));
                         var probC = -(pci * Math.Log(pci) + (1 - pci) * Math.Log(1 - pci));
-
+                        
+                        /*
+                        double denominator = (M[1, 1] + M[0, 1]) * (M[1, 1] + M[1, 0]) * (M[1, 0] + M[0, 0]) * (M[0, 1] + M[0, 0]);
+                        double chiSquaredScore = 0;
+                        if (denominator > 0)
+                        {
+                            double numerator = Math.Pow(((double)M[1, 1] * M[0, 0]) - ((double)M[1, 0] * M[0, 1]), 2) * totalEntities;
+                            chiSquaredScore = numerator / denominator;
+                        }
+                        */
                         var normalizedScore = score / Math.Min(probC, probF);
                         writer.WriteLine("{0},{1},{2}", target.ToString(), featureFreq.Key, normalizedScore);
+                        if (normalizedScore > 0 && normalizedScore < 50)
+                        {
+                            featureSpace.AddFeature(new Feature(){
+                                Name = featureFreq.Key,
+                                Value = 1.0
+                            });
+                        }
+                        //writer.WriteLine("{0},{1},{2}", target.ToString(), featureFreq.Key, chiSquaredScore);
                     }
                 }
             }
-
+            Logger.Log("Created space of {0} features", featureSpace.Size);
             return featureSpace;
         }
 
@@ -115,16 +136,18 @@
 
         public IEnumerable<Feature> ExtractFeatures(WebSite webSite)
         {
+            const string metaTagXPath= "//meta[@name=\"description\" or @name=\"keywords\"]/@content | //title/@content";
+
             var ngrams = new HashSet<string>();
             foreach (var page in webSite.Pages)
             {
-                foreach (var ngram in this.ExtractNGrams(page))
+                foreach (var ngram in this.ExtractXPath(page, metaTagXPath))
                 {
                     if (!ngrams.Contains(ngram))
                     {
                         ngrams.Add(ngram);
 
-                        var value = Feature.Type.RawText + ":" + ngram;
+                        var value = Feature.Type.MetaTag + ":" + ngram;
                         bool use = false;
 
                         if (this.Blacklist != null)
@@ -149,7 +172,7 @@
             }
         }
 
-        public IEnumerable<string> ExtractNGrams(WebPage page)
+        public IEnumerable<string> ExtractXPath(WebPage page, string xPath)
         {
             var document = new HtmlAgilityPack.HtmlDocument();
             document.LoadHtml(page.Content.ToLower());
@@ -161,10 +184,7 @@
 
             else
             {
-                var nodes = document.DocumentNode.SelectNodes(
-                    "//meta[@name=\"description\" or @name=\"keywords\"]/@content");
-                //"or //h1/text() or //h2/text() or //h3/text() or //title/text()");
-                //var nodes = document.DocumentNode.SelectNodes("//title/text()");
+                var nodes = document.DocumentNode.SelectNodes(xPath);
 
                 if (nodes != null)
                 {

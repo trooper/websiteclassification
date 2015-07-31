@@ -55,61 +55,51 @@
                 }
                 targetCount[entity.Label]++;
             }
-            using (var writer = new System.IO.StreamWriter(@"Data\Other\histogram_data.csv"))
+            long totalEntities = entities.Count<MLEntity>();
+            foreach (var featureFreq in freqTable)
             {
-                long totalEntities = entities.Count<MLEntity>();
-                foreach (var featureFreq in freqTable)
+                var totalFreq = featureFreq.Value.Values.Sum();
+                foreach (Target target in Enum.GetValues(typeof(Target)))
                 {
-                    var totalFreq = featureFreq.Value.Values.Sum();
-                    foreach (Target target in Enum.GetValues(typeof(Target)))
+                    float[,] M = new float[2, 2];
+
+                    M[0, 0] = (1f / totalEntities) * (totalEntities - totalFreq - targetCount[target] + featureFreq.Value[target]);
+                    M[0, 1] = (1f / totalEntities) * (totalFreq - featureFreq.Value[target]);
+                    M[1, 0] = (1f / totalEntities) * (targetCount[target] - featureFreq.Value[target]);
+                    M[1, 1] = (1f / totalEntities) * (featureFreq.Value[target]);
+
+                    float pci = totalFreq / (float)totalEntities;
+                    float pfj = totalFreq / (float)totalEntities;
+
+                    float[,] A = new float[2, 2];
+                    A[0, 0] = (M[0, 0] == 0) ? 0 : (float)(M[0, 0] * Math.Log(M[0, 0] / (1 - pci) * (1 - pfj)));
+                    A[0, 1] = (M[0, 1] == 0) ? 0 : (float)(M[0, 1] * Math.Log(M[0, 1] / (1 - pci) * pfj));
+                    A[1, 0] = (M[1, 0] == 0) ? 0 : (float)(M[1, 0] * Math.Log(M[1, 0] / pci * (1 - pfj)));
+                    A[1, 1] = (M[1, 1] == 0) ? 0 : (float)(M[1, 1] * Math.Log(M[1, 1] / pci * pfj));
+
+                    var score = A.Cast<float>().Sum();
+                    var probF = -(pfj * Math.Log(pfj) + (1 - pfj) * Math.Log(1 - pfj));
+                    var probC = -(pci * Math.Log(pci) + (1 - pci) * Math.Log(1 - pci));
+
+                    var normalizedScore = score / Math.Min(probC, probF);
+
+                    const int howManyRandomFeatures = 200;
+                    float randomThreshold = howManyRandomFeatures / (float)featureSpace.Size;
+                    Random rnd = new Random();
+                    if (normalizedScore > 0 && normalizedScore < 50)
                     {
-                        float[,] M = new float[2, 2];
-
-                        M[0, 0] = (1f / totalEntities) * (totalEntities - totalFreq - targetCount[target] + featureFreq.Value[target]);
-                        M[0, 1] = (1f / totalEntities) * (totalFreq - featureFreq.Value[target]);
-                        M[1, 0] = (1f / totalEntities) * (targetCount[target] - featureFreq.Value[target]);
-                        M[1, 1] = (1f / totalEntities) * (featureFreq.Value[target]);
-
-                        //M[0, 0] = (totalEntities - totalFreq - targetCount[target] + featureFreq.Value[target]);
-                        //M[0, 1] = (totalFreq - featureFreq.Value[target]);
-                        //M[1, 0] = (targetCount[target] - featureFreq.Value[target]);
-                        //M[1, 1] = (featureFreq.Value[target]);
-                        
-                        float pci = totalFreq / (float)totalEntities;
-                        float pfj = totalFreq / (float)totalEntities;
-
-                        float[,] A = new float[2, 2];
-                        A[0, 0] = (M[0, 0] == 0) ? 0 : (float)(M[0, 0] * Math.Log(M[0, 0] / (1 - pci) * (1 - pfj)));
-                        A[0, 1] = (M[0, 1] == 0) ? 0 : (float)(M[0, 1] * Math.Log(M[0, 1] / (1 - pci) * pfj));
-                        A[1, 0] = (M[1, 0] == 0) ? 0 : (float)(M[1, 0] * Math.Log(M[1, 0] / pci * (1 - pfj)));
-                        A[1, 1] = (M[1, 1] == 0) ? 0 : (float)(M[1, 1] * Math.Log(M[1, 1] / pci * pfj));
-
-                        var score = A.Cast<float>().Sum();
-                        var probF = -(pfj * Math.Log(pfj) + (1 - pfj) * Math.Log(1 - pfj));
-                        var probC = -(pci * Math.Log(pci) + (1 - pci) * Math.Log(1 - pci));
-                        
-                        /*
-                        double denominator = (M[1, 1] + M[0, 1]) * (M[1, 1] + M[1, 0]) * (M[1, 0] + M[0, 0]) * (M[0, 1] + M[0, 0]);
-                        double chiSquaredScore = 0;
-                        if (denominator > 0)
+                        if (rnd.NextDouble() < randomThreshold)
                         {
-                            double numerator = Math.Pow(((double)M[1, 1] * M[0, 0]) - ((double)M[1, 0] * M[0, 1]), 2) * totalEntities;
-                            chiSquaredScore = numerator / denominator;
-                        }
-                        */
-                        var normalizedScore = score / Math.Min(probC, probF);
-                        writer.WriteLine("{0},{1},{2}", target.ToString(), featureFreq.Key, normalizedScore);
-                        if (normalizedScore > 0 && normalizedScore < 50)
-                        {
-                            featureSpace.AddFeature(new Feature(){
+                            featureSpace.AddFeature(new Feature()
+                            {
                                 Name = featureFreq.Key,
                                 Value = 1.0
                             });
                         }
-                        //writer.WriteLine("{0},{1},{2}", target.ToString(), featureFreq.Key, chiSquaredScore);
                     }
                 }
             }
+
             Logger.Log("Created space of {0} features", featureSpace.Size);
             return featureSpace;
         }

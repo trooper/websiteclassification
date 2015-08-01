@@ -84,7 +84,10 @@
 
                 foreach (Target target in Enum.GetValues(typeof(Target)))
                 {
-                    normalizedScores.Add(mutualCalc.Calculate(featureFreq.Value, target));
+                    // Mutual information
+                    // normalizedScores.Add(mutualCalc.Calculate(featureFreq.Value, target));
+                    // Chi squared
+                    normalizedScores.Add(mutualCalc.ChiSquared(featureFreq.Value, target, totalEntities));
                 }
 
                 var normalizedScoreThreshold = 0.0;

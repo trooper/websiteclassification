@@ -49,5 +49,28 @@ namespace PsiMl.WebsiteClasification
             var normalizedScore = score / Math.Min(probC, probF);
             return normalizedScore;
         }
+
+        public double ChiSquared(Dictionary<Target, int> featureFrequency, Target target, long totalEntities)
+        {
+            float[,] M = new float[2, 2];
+            int totalFeatureCount = featureFrequency.Values.Sum();
+
+            M[0, 0] = (1f / EntityCount) * (EntityCount - totalFeatureCount - targetCount[target] + featureFrequency[target]);
+            M[0, 1] = (1f / EntityCount) * (totalFeatureCount - featureFrequency[target]);
+            M[1, 0] = (1f / EntityCount) * (targetCount[target] - featureFrequency[target]);
+            M[1, 1] = (1f / EntityCount) * (featureFrequency[target]);
+
+            float pci = totalFeatureCount / (float)EntityCount;
+            float pfj = totalFeatureCount / (float)EntityCount;
+
+            double denominator = (M[1, 1] + M[0, 1]) * (M[1, 1] + M[1, 0]) * (M[1, 0] + M[0, 0]) * (M[0, 1] + M[0, 0]);
+            double chiSquaredScore = 0;
+            if (denominator > 0)
+            {
+                double numerator = Math.Pow(((double)M[1, 1] * M[0, 0]) - ((double)M[1, 0] * M[0, 1]), 2) * totalEntities;
+                return chiSquaredScore = numerator / denominator;
+            }
+            return double.MinValue;
+        }
     }
 }

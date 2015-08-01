@@ -76,12 +76,13 @@
 
                     var normalizedScoreThreshold = 0.0;
                     var normalizedScoreCeil = double.MaxValue;
+                    var featureTag = featureFreq.Key.Split(':').First();
 
-                    if (featureFreq.Key.StartsWith("r"))
+                    if (featureTag == Feature.Type.RawText)
                     {
                         normalizedScoreThreshold = 120;
                         normalizedScoreCeil = 250;
-                        byClassThreshold = 0.04f;
+                        //byClassThreshold = 0.04f;
                     }
 
                     foreach (Target t in Enum.GetValues(typeof(Target)))
@@ -97,6 +98,7 @@
                     {
                         if (useFeature)
                         {
+                            featureSpace.featureTypeCount[featureTag]++;
                             featureSpace.AddFeature(new Feature()
                             {
                                 Name = featureFreq.Key,

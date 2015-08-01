@@ -8,7 +8,7 @@
 
     public class Feature
     {
-        public class Type
+        public static class Type
         {
             public const string RawText = "r";
             public const string MetaTag = "m";

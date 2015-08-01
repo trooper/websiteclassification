@@ -8,8 +8,22 @@
     {
         // Keep a mapping from each unique feature name to a unique index.
         private Dictionary<string, int> features = new Dictionary<string, int>();
+        public Dictionary<string, int> featureTypeCount
+        {
+            get; set;
+        }
 
         private int numEntities;
+
+        public FeatureSpace()
+        {
+            featureTypeCount = new Dictionary<string, int>();
+            foreach(var type in typeof(Feature.Type).GetFields())
+            {
+                featureTypeCount.Add((string)type.GetRawConstantValue(), 0);
+            }
+        }
+
         public int NumEntities
         {
             get

@@ -24,13 +24,13 @@
         static void Analysis()
         {
             var reader = new Reader();
-            var categories = new Tuple<String, Target> [] {
+            var categories = new Tuple<String, Target>[] {
                 Tuple.Create("Accommodation", Target.Accommodation),
                 Tuple.Create("Restaurant", Target.Restaurant),
                 Tuple.Create("Retail", Target.Retail),
                 Tuple.Create("Other", Target.Other) };
             var labeledEntities = new List<IEnumerable<MLEntity>>();
-            
+
             foreach (var category in categories)
             {
                 labeledEntities.Add(reader.EnumerateTarget(@"Data\DataSets\" + category.Item1, category.Item2));
@@ -61,20 +61,16 @@
 
         static IEnumerable<MLEntity> Entities(string path = @"Data\DataSets", double entitiesSampleRate = 1)
         {
-            if(entityList == null)
-            {
-                var reader = new Reader();
-                entityList = reader.EnumerateAllTargets(path, entitiesSampleRate).ToArray();
-            }
-            return entityList;        
+            var reader = new Reader();
+            return reader.EnumerateAllTargets(path, entitiesSampleRate);
         }
 
         static Model Training()
-        {   
+        {
             Logger.Log("Begin training");
             var reader = new Reader();
             var featurizer = new Featurizer();
-         
+
             featurizer.Blacklist = new Blacklist(@"Data\Features\Blacklist.txt");
 
             var targets = new HashSet<Target>();
@@ -85,6 +81,12 @@
 
             var featureSpace = featurizer.CreateFeatureSpace(Entities());
             Logger.Log("Feature space created, {0} features", featureSpace.Size);
+            Logger.Log("# of features by type:");
+            foreach(var pair in featureSpace.featureTypeCount)
+            {
+                Logger.Log("{0}: {1}", pair.Key, pair.Value);
+            }
+
             Logger.Log("Operating with {0} entities", featureSpace.NumEntities);
 
             var learner = new Learner(featurizer);

@@ -64,57 +64,60 @@
             long totalEntities = featureSpace.NumEntities;
 
             SortedSet<KeyValuePair<Feature, double>> priority = new SortedSet<KeyValuePair<Feature, double>>(new FeatureComparer());
-
-            foreach (var featureFreq in freqTable)
+            using (System.IO.StreamWriter writer = new StreamWriter("Chi squared_value_count.csv"))
             {
-                var totalFreq = featureFreq.Value.Values.Sum();
-                bool useFeature = false;
-
-                foreach (Target t in Enum.GetValues(typeof(Target)))
+                foreach (var featureFreq in freqTable)
                 {
-                    if ((float)featureFreq.Value[t] / targetCount[t] > byClassThreshold)
+                    var totalFreq = featureFreq.Value.Values.Sum();
+                    bool useFeature = false;
+
+                    foreach (Target t in Enum.GetValues(typeof(Target)))
                     {
-                        useFeature = true;
-                        break;
+                        if ((float)featureFreq.Value[t] / targetCount[t] > byClassThreshold)
+                        {
+                            useFeature = true;
+                            break;
+                        }
+                    }
+                    if (!useFeature) continue;
+
+                    List<double> normalizedScores = new List<double>();
+
+                    foreach (Target target in Enum.GetValues(typeof(Target)))
+                    {
+                        // Mutual information
+                        // normalizedScores.Add(mutualCalc.Calculate(featureFreq.Value, target));
+                        // Chi squared
+                        normalizedScores.Add(mutualCalc.ChiSquared(featureFreq.Value, target, totalEntities));
+                    }
+                    
+                    writer.WriteLine("{0}", normalizedScores.Average(x => x));
+
+                    var normalizedScoreThreshold = 0.0;
+                    var normalizedScoreCeil = 300;
+                    var featureTag = featureFreq.Key.Split(':').First();
+                    var avg = normalizedScores.Average(x => x);
+
+                    if (avg > normalizedScoreThreshold && avg < normalizedScoreCeil)
+                    {
+                        /*featureSpace.featureTypeCount[featureTag]++;*/
+                        /*featureSpace.AddFeature(new Feature()
+                        {
+                            Name = featureFreq.Key,
+                            Value = 1.0
+                        });*/
+                        priority.Add(new KeyValuePair<Feature, double>(new Feature()
+                        {
+                            Name = featureFreq.Key,
+                            Value = 1.0
+                        }, normalizedScores.Max()));
+                    }
+                    else if (featureFreq.Key.StartsWith("r"))
+                    {
+                        Blacklist.Add(featureFreq.Key);
                     }
                 }
-                if (!useFeature) continue;
-
-                List<double> normalizedScores = new List<double>();
-
-                foreach (Target target in Enum.GetValues(typeof(Target)))
-                {
-                    // Mutual information
-                    // normalizedScores.Add(mutualCalc.Calculate(featureFreq.Value, target));
-                    // Chi squared
-                    normalizedScores.Add(mutualCalc.ChiSquared(featureFreq.Value, target, totalEntities));
-                }
-
-                var normalizedScoreThreshold = 0.0;
-                var normalizedScoreCeil = 300;
-                var featureTag = featureFreq.Key.Split(':').First();
-                var avg = normalizedScores.Average(x=>x);
-
-                if (avg > normalizedScoreThreshold && avg < normalizedScoreCeil)
-                {
-                    /*featureSpace.featureTypeCount[featureTag]++;*/
-                    /*featureSpace.AddFeature(new Feature()
-                    {
-                        Name = featureFreq.Key,
-                        Value = 1.0
-                    });*/
-                    priority.Add(new KeyValuePair<Feature, double>(new Feature()
-                    {
-                        Name = featureFreq.Key,
-                        Value = 1.0
-                    }, normalizedScores.Max()));
-                }
-                else if (featureFreq.Key.StartsWith("r"))
-                {
-                    Blacklist.Add(featureFreq.Key);
-                }
             }
-
             int howMuchIsLeft = 300;
             while (howMuchIsLeft-- > 0 && priority.Count > 0)
             {

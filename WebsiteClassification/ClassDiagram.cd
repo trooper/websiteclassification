@@ -22,14 +22,14 @@
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.EvaluationResult">
-    <Position X="7.5" Y="2.5" Width="1.5" />
+    <Position X="7.5" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAGAAAAAAAAEAEAAAEAIAAAAAAAAAAAAAAAAEAA=</HashCode>
       <FileName>EvaluationResult.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.Feature">
-    <Position X="2.25" Y="2.5" Width="1.5" />
+    <Position X="2.25" Y="2.75" Width="1.5" />
     <NestedTypes>
       <Class Name="PsiMl.WebsiteClasification.Feature.Type" Collapsed="true">
         <TypeIdentifier>
@@ -43,16 +43,24 @@
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.FeatureSpace">
-    <Position X="9.5" Y="2.5" Width="1.5" />
+    <Position X="9.25" Y="2.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAgAAAAgAGgAAABAAAAAAAAAACBAAAAAAAAEAA=</HashCode>
+      <HashCode>AAAAAAAgAAAAgAGgAAABAAAABAAAAACBAAAAAAAAEAA=</HashCode>
       <FileName>FeatureSpace.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.Featurizer">
-    <Position X="5.75" Y="2.5" Width="1.5" />
+    <Position X="5.75" Y="2.75" Width="1.5" />
+    <NestedTypes>
+      <Class Name="PsiMl.WebsiteClasification.Featurizer.FeatureComparer" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Featurizer.cs</NewMemberFileName>
+        </TypeIdentifier>
+        <Lollipop Position="0.2" />
+      </Class>
+    </NestedTypes>
     <TypeIdentifier>
-      <HashCode>EAIAAEAAAAAAAAAAAQQAAAAAAAAAIAAAAAAQQAAAQAA=</HashCode>
+      <HashCode>EAIAAEAAAAAAAAAAAQQAAEAAAAAAIBAAAAACQAEAQAA=</HashCode>
       <FileName>Featurizer.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -64,7 +72,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.Logger">
-    <Position X="9.5" Y="0.5" Width="1.5" />
+    <Position X="9.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAACAAAQAAAAAAAAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Logger.cs</FileName>
@@ -78,56 +86,56 @@
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.Model">
-    <Position X="4" Y="2.5" Width="1.5" />
+    <Position X="4" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAQgIACAAAAAgAAAAAAAAAAAERAAEAAAAAAAAAAAAA=</HashCode>
       <FileName>Model.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.Prediction">
-    <Position X="13" Y="2.5" Width="1.5" />
+    <Position X="12.75" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAEAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Prediction.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.Program">
-    <Position X="14.75" Y="0.5" Width="1.5" />
+    <Position X="14.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAgAAAAIAAAAAAAAAAAAAAEAAAAAAAAAEABAAAAAA=</HashCode>
       <FileName>Program.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.Reader">
-    <Position X="11.25" Y="0.5" Width="1.5" />
+    <Position X="11" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>gAAgAAAAAAAQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Reader.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.SomeExamples">
-    <Position X="14.75" Y="3" Width="1.5" />
+    <Position X="14.5" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAgAAAAAAAAAAkAAAAAAAAAAAAAAA=</HashCode>
       <FileName>SomeExamples.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.WebPage">
-    <Position X="13" Y="0.5" Width="1.5" />
+    <Position X="12.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAgAAAAAEAAAAAAAAAAAAAAAACAAAAAAAAAA=</HashCode>
       <FileName>WebPage.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.WebSite">
-    <Position X="11.25" Y="2.5" Width="1.5" />
+    <Position X="11" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAgAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>WebSite.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="PsiMl.WebsiteClasification.WebTools">
-    <Position X="0.5" Y="2.5" Width="1.5" />
+    <Position X="0.5" Y="2.75" Width="1.5" />
     <NestedTypes>
       <Class Name="PsiMl.WebsiteClasification.WebTools.DomainHelper" Collapsed="true">
         <TypeIdentifier>
@@ -150,8 +158,29 @@
       <FileName>WebTools.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="PsiMl.WebsiteClasification.Blacklist">
+    <Position X="11" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAoAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAQAAA=</HashCode>
+      <FileName>Blacklist.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.HTMLStorage">
+    <Position X="12.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAA=</HashCode>
+      <FileName>HTMLStorage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PsiMl.WebsiteClasification.MutualInformationCalculator">
+    <Position X="7.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABACAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MutualInformationCalculator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Enum Name="PsiMl.WebsiteClasification.Target">
-    <Position X="2.25" Y="4.25" Width="1.5" />
+    <Position X="2.25" Y="4.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>JAAAABAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Target.cs</FileName>

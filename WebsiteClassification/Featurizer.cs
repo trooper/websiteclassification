@@ -63,6 +63,8 @@
             MutualInformationCalculator mutualCalc = new MutualInformationCalculator(targetCount);
             long totalEntities = featureSpace.NumEntities;
 
+            SortedSet<KeyValuePair<Feature, double>> priority = new SortedSet<KeyValuePair<Feature, double>>(new FeatureComparer());
+            
             const int howManyRandomFeatures = 200;
             float randomThreshold = (float)howManyRandomFeatures / (freqTable.Count * Enum.GetValues(typeof(Target)).Length);
 
@@ -80,8 +82,8 @@
 
                     if (featureTag == Feature.Type.RawText)
                     {
-                        normalizedScoreThreshold = 120;
-                        normalizedScoreCeil = 250;
+                        //normalizedScoreThreshold = 120;
+                        //normalizedScoreCeil = 250;
                         //byClassThreshold = 0.04f;
                     }
 
@@ -98,12 +100,17 @@
                     {
                         if (useFeature)
                         {
-                            featureSpace.featureTypeCount[featureTag]++;
-                            featureSpace.AddFeature(new Feature()
+                            /*featureSpace.featureTypeCount[featureTag]++;*/
+                            /*featureSpace.AddFeature(new Feature()
                             {
                                 Name = featureFreq.Key,
                                 Value = 1.0
-                            });
+                            });*/
+                            priority.Add(new KeyValuePair<Feature, double>(new Feature()
+                            {
+                                Name = featureFreq.Key,
+                                Value = 1.0
+                            }, normalizedScore));
                         }
                     }
                     else if (featureFreq.Key.StartsWith("r"))
@@ -112,6 +119,15 @@
                     }
                 }
             }
+
+            int howMuchIsLeft = 250;
+            while(howMuchIsLeft-- > 0)
+            {
+                featureSpace.AddFeature(priority.Max.Key);
+                featureSpace.featureTypeCount[priority.Max.Key.Name.Split(':').First()]++;
+                priority.Remove(priority.Max);
+            }
+
             return featureSpace;
         }
 
@@ -269,6 +285,14 @@
             }
 
             return matrix;
+        }
+
+        class FeatureComparer : IComparer<KeyValuePair<Feature, double>>
+        {
+            public int Compare(KeyValuePair<Feature, double> x, KeyValuePair<Feature, double> y)
+            {
+                return x.Value.CompareTo(y.Value);
+            }
         }
     }
 }

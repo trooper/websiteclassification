@@ -25,7 +25,7 @@
         public FeatureSpace CreateFeatureSpace(IEnumerable<MLEntity> entities)
         {
             Random rnd = new Random(42);
-            float byClassThreshold = 0.02f;
+            float byClassThreshold = 0.04f;
             var featureSpace = new FeatureSpace();
             int numberOfTargets = Enum.GetValues(typeof(Target)).Length;
 
@@ -79,13 +79,6 @@
                     var normalizedScoreThreshold = 0.0;
                     var normalizedScoreCeil = double.MaxValue;
                     var featureTag = featureFreq.Key.Split(':').First();
-
-                    if (featureTag == Feature.Type.RawText)
-                    {
-                        //normalizedScoreThreshold = 120;
-                        //normalizedScoreCeil = 250;
-                        //byClassThreshold = 0.04f;
-                    }
 
                     foreach (Target t in Enum.GetValues(typeof(Target)))
                     {

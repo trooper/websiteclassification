@@ -65,7 +65,7 @@
         {
             return new WebPage
             {
-                Content = WebTools.UnescapeTsv(tokens[2]),
+                Content = WebTools.UnescapeTsv(tokens[2]).ToLower(),
                 Url = tokens[0]
             };
         }

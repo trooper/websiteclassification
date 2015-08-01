@@ -21,6 +21,7 @@
                 label = Target.RestaurantAndAccommodation;
             else if (label == Target.Other || label == Target.Retail)
                 label = Target.OtherAndRetail;
+            entity.Label = label;
 
             foreach (var line in System.IO.File.ReadLines(file))
             {
@@ -59,6 +60,7 @@
             Logger.Log("Enumerating all targets");
             foreach (Target t in Enum.GetValues(typeof(Target)))
             {
+                if ((int)t > 3) break;
                 foreach(var entity in EnumerateTarget(Path.Combine(directory, t.ToString()), t, sampleRate))
                 {
                     yield return entity;

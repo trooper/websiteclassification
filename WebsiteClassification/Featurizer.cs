@@ -64,9 +64,6 @@
             long totalEntities = featureSpace.NumEntities;
 
             SortedSet<KeyValuePair<Feature, double>> priority = new SortedSet<KeyValuePair<Feature, double>>(new FeatureComparer());
-            
-            const int howManyRandomFeatures = 200;
-            float randomThreshold = (float)howManyRandomFeatures / (freqTable.Count * Enum.GetValues(typeof(Target)).Length);
 
             foreach (var featureFreq in freqTable)
             {
@@ -93,8 +90,9 @@
                 var normalizedScoreThreshold = 0.0;
                 var normalizedScoreCeil = 300;
                 var featureTag = featureFreq.Key.Split(':').First();
+                var avg = normalizedScores.Average(x=>x);
 
-                if (normalizedScores.Any<double>(x => x > normalizedScoreThreshold && x < normalizedScoreCeil))
+                if (avg > normalizedScoreThreshold && avg < normalizedScoreCeil)
                 {
                     /*featureSpace.featureTypeCount[featureTag]++;*/
                     /*featureSpace.AddFeature(new Feature()
@@ -114,10 +112,11 @@
                 }
             }
 
-            int howMuchIsLeft = 250;
-            while(howMuchIsLeft-- > 0)
+            int howMuchIsLeft = 300;
+            while (howMuchIsLeft-- > 0 && priority.Count > 0)
             {
                 featureSpace.AddFeature(priority.Max.Key);
+                Logger.Log("Added feature {0} with score {1}", priority.Max.Key.Name, priority.Max.Value);
                 featureSpace.featureTypeCount[priority.Max.Key.Name.Split(':').First()]++;
                 priority.Remove(priority.Max);
             }
@@ -162,7 +161,7 @@
             }
             this.Blacklist.Save();
         }
-        
+
         public double[] CreateFeatureVector(WebSite webSite, FeatureSpace featureSpace)
         {
             var vector = new double[featureSpace.Size];
@@ -180,7 +179,7 @@
 
         public void LoadEntityPagesHTML(MLEntity entity)
         {
-            foreach(var page in entity.WebSite.Pages)
+            foreach (var page in entity.WebSite.Pages)
             {
                 storage.Add(page);
             }
@@ -193,7 +192,7 @@
 
         public IEnumerable<Feature> ExtractMetaFeatures(WebSite webSite)
         {
-            const string metaTagXPath= "/html/head/meta[@name=\"description\" or @name=\"keywords\"]/@content | /html/head/title/@content | //h1/@content | //h2/@content";
+            const string metaTagXPath = "/html/head/meta[@name=\"description\" or @name=\"keywords\"]/@content | /html/head/title/@content | //h1/@content | //h2/@content";
 
             var ngrams = new HashSet<string>();
             foreach (var page in webSite.Pages)
@@ -233,7 +232,7 @@
         {
             //var document = storage.GetDocument(page);
             var document = new HtmlAgilityPack.HtmlDocument();
-            document.LoadHtml(page.Content);
+             document.LoadHtml(page.Content);
 
             if (String.IsNullOrEmpty(page.Content))
             {

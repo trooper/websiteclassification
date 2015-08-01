@@ -76,7 +76,8 @@
             var targets = new HashSet<Target>();
             foreach (Target t in Enum.GetValues(typeof(Target)))
             {
-                targets.Add(t);
+                if((int)t > 3)
+                    targets.Add(t);
             }
 
             var featureSpace = featurizer.CreateFeatureSpace(Entities());

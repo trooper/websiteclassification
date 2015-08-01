@@ -16,6 +16,11 @@
                 Domain = domain,
                 Pages = new List<WebPage>()
             };
+            // I'll die in pain
+            if (label == Target.Accommodation || label == Target.Restaurant)
+                label = Target.RestaurantAndAccommodation;
+            else if (label == Target.Other || label == Target.Retail)
+                label = Target.OtherAndRetail;
 
             foreach (var line in System.IO.File.ReadLines(file))
             {

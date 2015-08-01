@@ -98,5 +98,35 @@
 
             return model;
         }
+
+        static Model preprocess()
+        {
+            Logger.Log("Begin training");
+            var reader = new Reader();
+            var featurizer = new Featurizer();
+
+            featurizer.Blacklist = new Blacklist(@"Data\Features\Blacklist.txt");
+
+            var targets = new HashSet<Target>();
+
+            var featureSpace = featurizer.CreateFeatureSpace(Entities());
+            Logger.Log("Feature space created, {0} features", featureSpace.Size);
+            Logger.Log("# of features by type:");
+            foreach (var pair in featureSpace.featureTypeCount)
+            {
+                Logger.Log("{0}: {1}", pair.Key, pair.Value);
+            }
+
+            Logger.Log("Operating with {0} entities", featureSpace.NumEntities);
+
+            var learner = new Learner(featurizer);
+            var model = learner.Learn(Entities(), featureSpace.NumEntities, featureSpace, targets);
+            Logger.Log("Model learned");
+
+            model.Save(@"Data\model");
+            Logger.Log("Model serialized to file");
+
+            return model;
+        }
     }
 }

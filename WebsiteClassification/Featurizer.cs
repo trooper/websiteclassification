@@ -71,45 +71,46 @@
             foreach (var featureFreq in freqTable)
             {
                 var totalFreq = featureFreq.Value.Values.Sum();
+                bool useFeature = false;
+
+                foreach (Target t in Enum.GetValues(typeof(Target)))
+                {
+                    if ((float)featureFreq.Value[t] / targetCount[t] > byClassThreshold)
+                    {
+                        useFeature = true;
+                        break;
+                    }
+                }
+                if (!useFeature) continue;
+
+                List<double> normalizedScores = new List<double>();
+
                 foreach (Target target in Enum.GetValues(typeof(Target)))
                 {
-                    var normalizedScore = mutualCalc.Calculate(featureFreq.Value, target);
-                    bool useFeature = false;
+                    normalizedScores.Add(mutualCalc.Calculate(featureFreq.Value, target));
+                }
 
-                    var normalizedScoreThreshold = 0.0;
-                    var normalizedScoreCeil = double.MaxValue;
-                    var featureTag = featureFreq.Key.Split(':').First();
+                var normalizedScoreThreshold = 0.0;
+                var normalizedScoreCeil = 300;
+                var featureTag = featureFreq.Key.Split(':').First();
 
-                    foreach (Target t in Enum.GetValues(typeof(Target)))
+                if (normalizedScores.Any<double>(x => x > normalizedScoreThreshold && x < normalizedScoreCeil))
+                {
+                    /*featureSpace.featureTypeCount[featureTag]++;*/
+                    /*featureSpace.AddFeature(new Feature()
                     {
-                        if ((float)featureFreq.Value[t] / targetCount[t] > byClassThreshold)
-                        {
-                            useFeature = true;
-                            break;
-                        }
-                    }
-
-                    if (normalizedScore > normalizedScoreThreshold && normalizedScore < normalizedScoreCeil)
+                        Name = featureFreq.Key,
+                        Value = 1.0
+                    });*/
+                    priority.Add(new KeyValuePair<Feature, double>(new Feature()
                     {
-                        if (useFeature)
-                        {
-                            /*featureSpace.featureTypeCount[featureTag]++;*/
-                            /*featureSpace.AddFeature(new Feature()
-                            {
-                                Name = featureFreq.Key,
-                                Value = 1.0
-                            });*/
-                            priority.Add(new KeyValuePair<Feature, double>(new Feature()
-                            {
-                                Name = featureFreq.Key,
-                                Value = 1.0
-                            }, normalizedScore));
-                        }
-                    }
-                    else if (featureFreq.Key.StartsWith("r"))
-                    {
-                        Blacklist.Add(featureFreq.Key);
-                    }
+                        Name = featureFreq.Key,
+                        Value = 1.0
+                    }, normalizedScores.Max()));
+                }
+                else if (featureFreq.Key.StartsWith("r"))
+                {
+                    Blacklist.Add(featureFreq.Key);
                 }
             }
 
